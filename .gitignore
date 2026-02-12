@@ -5,6 +5,13 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+*.ctxt
+
 ### STS ###
 .apt_generated
 .classpath
@@ -16,6 +23,11 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+
+### Database & Docker ###
+postgres_data/
+db_data/
+.DS_Store
 
 ### IntelliJ IDEA ###
 .idea
@@ -35,3 +47,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment Secrets ###
+.env
+*.properties
+!src/main/resources/application.properties
+!src/main/resources/application.yml
