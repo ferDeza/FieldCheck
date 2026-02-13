@@ -1,0 +1,9 @@
+POST http://localhost:8081/api/users
+Content-Type: application/json
+
+{
+  "fullName": "Fernando Developer",
+  "email": "fernando@checking.com",
+  "phoneNumber": "999888777",
+  "role": "ADMIN"
+}
