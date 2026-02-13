@@ -1,0 +1,10 @@
+### Guardar mi primera cancha
+POST http://localhost:8081/api/fields
+Content-Type: application/json
+
+{
+  "name": "Cancha Central Los Olivos",
+  "type": "Fútbol 7",
+  "basePrice": 45.0,
+  "description": "Césped sintético premium con iluminación LED"
+}
