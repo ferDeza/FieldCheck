@@ -20,11 +20,10 @@ public class BookingController {
     }
     @PostMapping
     public Booking createBooking(@RequestBody BookingRequest request) {
-        return bookingService.createBooking(
-                request.getUserId(),
-                request.getUserId(),
-                request.getStartTime(),
-                request.getEndTime()
-        );
+        return bookingService.createBooking(request);
+    }
+    @DeleteMapping("/{id}")
+    public void deleteBooking(@PathVariable long id) {
+        bookingService.deleteBooking(id);
     }
 }

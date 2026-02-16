@@ -1,0 +1,36 @@
+<body class="container mt-5">
+<h2>Nueva Reserva</h2>
+<a th:href="@{/view/bookings/new}" class="btn btn-success mb-3">Crear Nueva Reserva</a>
+<form th:action="@{/view/bookings/save}" th:object="${booking}" method="post" class="card p-4">
+
+  <div class="mb-3">
+    <label class="form-label">Usuario</label>
+    <select th:field="*{user}" class="form-select" required>
+      <option value="">Seleccione un usuario...</option>
+      <option th:each="u : ${user}" th:value="${u.id}" th:text="${u.fullName}"></option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Cancha</label>
+    <select th:field="*{sportField}" class="form-select" required>
+      <option value="">Seleccione una cancha...</option>
+      <option th:each="f : ${fields}" th:value="${f.id}" th:text="${f.name}"></option>
+    </select>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Fecha y Hora Inicio</label>
+      <input type="datetime-local" th:field="*{startDateTime}" class="form-control" required>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Fecha y Hora Fin</label>
+      <input type="datetime-local" th:field="*{endDateTime}" class="form-control" required>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+  <a th:href="@{/view/bookings}" class="btn btn-secondary">Cancelar</a>
+</form>
+</body>
