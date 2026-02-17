@@ -46,4 +46,5 @@ public class BookingViewController {
         bookingService.createBooking(request);
         return "redirect:/view/bookings";
     }
+
 }
