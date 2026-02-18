@@ -1,8 +1,5 @@
 package com.app.fieldcheck.web.controllers;
-
 import com.app.fieldcheck.models.Booking;
-import com.app.fieldcheck.models.SportField;
-import com.app.fieldcheck.models.User;
 import com.app.fieldcheck.services.BookingService;
 import com.app.fieldcheck.services.SportFieldService;
 import com.app.fieldcheck.services.UserService;
