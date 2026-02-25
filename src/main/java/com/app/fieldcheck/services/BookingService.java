@@ -6,7 +6,10 @@ import com.app.fieldcheck.repositories.BookingRepository;
 import com.app.fieldcheck.repositories.SportFieldRepository;
 import com.app.fieldcheck.repositories.UserRepository;
 import com.app.fieldcheck.web.dtos.BookingRequest;
+import com.app.fieldcheck.web.dtos.BookingWebDTO;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.TypeRegistration;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,7 +27,21 @@ public class BookingService {
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
-    public Booking createBooking(BookingRequest booking) {
+
+    public List<BookingWebDTO> getAllBookingsForWeb(){
+        return bookingRepository.findAll().stream()
+                .map(booking -> new BookingWebDTO(
+                   booking.getId(),
+                   booking.getUser().getFullName(),
+                   booking.getSportField().getName(),
+                   booking.getStartDateTime().toString()+ "a"+ booking.getEndDateTime(),
+                   booking.getTotalPrice()
+                )).toList();
+    }
+
+
+    @Transactional
+    public BookingWebDTO createBooking(BookingRequest booking) {
         var user = userRepository.findById(booking.getUserId()).orElseThrow(()
                 -> new RuntimeException("Usuario no encontrado"));
         var field = sportFieldRepository.findById(booking.getFieldId()).orElseThrow(()
@@ -45,7 +62,15 @@ public class BookingService {
                 .endDateTime(end)
                 .totalPrice(calculatedPrice)
                 .build();
-        return bookingRepository.save(newBooking);
+        Booking saved = bookingRepository.save(newBooking);
+
+        return new BookingWebDTO(
+                saved.getId(),
+                user.getFullName(),
+                field.getName(),
+                saved.getStartDateTime()+"a"+saved.getEndDateTime(),
+                saved.getTotalPrice()
+        );
     }
 
     public List<Booking> getBookings() {
