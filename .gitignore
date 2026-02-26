@@ -29,6 +29,8 @@ postgres_data/
 db_data/
 .DS_Store
 
+src/main/resources/certs/
+*.pem
 ### IntelliJ IDEA ###
 .idea
 *.iws
