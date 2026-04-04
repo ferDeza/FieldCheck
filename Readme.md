@@ -120,11 +120,14 @@ Database (PostgreSQL)
 ## Getting Started
 
 ### Prerequisites
-- Java 21 or higher
-- PostgreSQL 12+
-- Gradle 8+
+- Docker and Docker Compose
+- **OR** for local development:
+  - Java 21 or higher
+  - Node.js 18+ and npm
+  - PostgreSQL 12+
+  - Gradle 8+
 
-### Installation
+### Quick Start (Recommended - Using Docker Compose)
 
 1. **Clone the Repository**
    ```bash
@@ -141,9 +144,36 @@ Database (PostgreSQL)
    DB_PASSWORD=password123
    ```
 
-3. **Start PostgreSQL (using Docker Compose)**
+3. **Start All Services (Backend, Frontend, Database)**
    ```bash
-   docker-compose up -d
+   docker-compose up
+   ```
+   
+   - **Frontend**: http://localhost:3000
+   - **Backend API**: http://localhost:8080/api
+   - **Database**: localhost:5432
+
+### Local Development Setup
+
+#### Backend Setup
+
+1. **Navigate to backend directory**
+   ```bash
+   cd backend
+   ```
+
+2. **Configure Environment Variables**
+   Create a `.env` file in the project root (parent of backend folder):
+   ```env
+   DB_PORT=5432
+   DB_NAME=field_db
+   DB_USER=admin
+   DB_PASSWORD=password123
+   ```
+
+3. **Start PostgreSQL (using Docker)**
+   ```bash
+   docker run --name fieldcheck-db -e POSTGRES_PASSWORD=password123 -e POSTGRES_USER=admin -e POSTGRES_DB=field_db -p 5432:5432 -d postgres:15-alpine
    ```
 
 4. **Build the Project**
@@ -156,11 +186,103 @@ Database (PostgreSQL)
    ./gradlew bootRun
    ```
    
-   The application will start on `http://localhost:8081`
+   The backend will start on `http://localhost:8080`
+
+#### Frontend Setup
+
+1. **Navigate to frontend directory**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**
+   Create a `.env` file based on `.env.example`:
+   ```env
+   REACT_APP_API_URL=http://localhost:8080/api
+   ```
+
+4. **Start development server**
+   ```bash
+   npm start
+   ```
+   
+   The frontend will start on `http://localhost:3000` with hot-reload enabled.
+
+5. **Build for production**
+   ```bash
+   npm run build
+   ```
 
 ---
 
-## API Usage
+## Frontend - Backend Integration
+
+### API Configuration
+The React frontend communicates with the backend via the API service layer in `frontend/src/services/api.js`.
+
+**Environment Variables** (in `frontend/.env`):
+```env
+REACT_APP_API_URL=http://localhost:8080/api
+```
+
+### Frontend Architecture
+
+The React application follows a layered component architecture:
+
+**Pages** – Main application screens:
+- `Login` – User authentication
+- `Register` – User registration
+- `Dashboard` – Welcome dashboard with stats
+- `Bookings` – Booking management
+- `SportFields` – Browse available fields
+
+**Components** – Reusable UI components:
+- `Navigation` – Navigation bar with routing links
+- `ProtectedRoute` – Route protection for authenticated users
+
+**Context (State Management)**:
+- `AuthContext` – Manages user authentication state, tokens, and session
+
+**Services** – API communication:
+- `authService` – Login and registration endpoints
+- `bookingService` – Booking CRUD operations
+- `sportFieldService` – Sport field listing and creation
+
+### Using the API Services in React Components
+
+```javascript
+import { authService, bookingService } from '../services/api';
+
+// Login
+const { token } = await authService.login(email, password);
+
+// Get Bookings
+const bookings = await bookingService.getAllBookings();
+
+// Create Booking
+const booking = await bookingService.createBooking({
+  sportFieldId: 1,
+  startDateTime: '2024-03-10T10:00:00',
+  endDateTime: '2024-03-10T12:00:00',
+  notes: 'Team practice'
+});
+
+// Delete Booking
+await bookingService.deleteBooking(bookingId);
+```
+
+### CORS Configuration
+The backend is configured to accept requests from:
+- `http://localhost:3000` (React development)
+
+For production, update the `corsConfigurationSource()` bean in `backend/src/main/java/com/app/fieldcheck/config/SecurityConfig.java` with your frontend domain.
+
+---
 
 ### Authentication
 - **POST** `/api/auth/register` – Register new user
@@ -187,26 +309,67 @@ Database (PostgreSQL)
 
 ```
 FieldCheck/
-├── src/
-│   ├── main/
-│   │   ├── java/com/app/fieldcheck/
-│   │   │   ├── config/              # Security & app configuration
-│   │   │   ├── controllers/         # REST controllers
-│   │   │   ├── enums/               # Role and status enumerations
-│   │   │   ├── models/              # JPA entities
-│   │   │   ├── repositories/        # Data access layer
-│   │   │   ├── services/            # Business logic
-│   │   │   ├── web/                 # Web utilities
-│   │   │   └── FieldCheckApplication.java
-│   │   └── resources/
-│   │       ├── application.yml      # Spring configuration
-│   │       ├── templates/           # Thymeleaf templates
-│   │       └── static/              # CSS, JS assets
-│   └── test/
-│       └── java/                    # Unit & integration tests
-├── build.gradle                     # Gradle dependencies & build config
-├── Dockerfile                       # Container configuration
-├── compose.yaml                     # Docker Compose setup
+├── backend/                         # Spring Boot Backend
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/app/fieldcheck/
+│   │   │   │   ├── config/              # Security & app configuration
+│   │   │   │   ├── controllers/         # REST controllers
+│   │   │   │   ├── enums/               # Role and status enumerations
+│   │   │   │   ├── models/              # JPA entities
+│   │   │   │   ├── repositories/        # Data access layer
+│   │   │   │   ├── services/            # Business logic
+│   │   │   │   ├── web/                 # Web utilities
+│   │   │   │   └── FieldCheckApplication.java
+│   │   │   └── resources/
+│   │   │       ├── application.yml      # Spring configuration
+│   │   │       ├── certs/               # SSL certificates
+│   │   │       ├── static/              # CSS, JS assets
+│   │   │       └── templates/           # Thymeleaf templates
+│   │   └── test/
+│   │       └── java/                    # Unit & integration tests
+│   ├── build.gradle                     # Gradle dependencies & build config
+│   ├── Dockerfile                       # Backend container configuration
+│   └── HELP.md
+├── frontend/                        # React Frontend (Modern SPA)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navigation.jsx           # Navigation bar component
+│   │   │   ├── Navigation.css
+│   │   │   └── ProtectedRoute.jsx       # Auth-protected route wrapper
+│   │   │
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx          # Authentication state management
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Login.jsx                # User login page
+│   │   │   ├── Register.jsx             # User registration page
+│   │   │   ├── Dashboard.jsx            # User dashboard/home
+│   │   │   ├── Bookings.jsx             # Booking management page
+│   │   │   ├── SportFields.jsx          # Browse sport fields
+│   │   │   ├── Auth.css
+│   │   │   ├── Dashboard.css
+│   │   │   ├── Bookings.css
+│   │   │   └── SportFields.css
+│   │   │
+│   │   ├── services/
+│   │   │   └── api.js                   # API service layer
+│   │   │
+│   │   ├── App.jsx                      # Main app component with routing
+│   │   ├── App.css
+│   │   └── index.js
+│   │
+│   ├── public/                      # Static assets
+│   ├── .env.example                 # Environment variables template
+│   ├── package.json
+│   ├── Dockerfile                   # Frontend container configuration
+│   ├── FRONTEND_GUIDE.md            # Detailed frontend documentation
+│   ├── API_INTEGRATION.md           # API integration guide
+│   └── README.md
+│
+├── compose.yaml                     # Docker Compose setup for entire stack
+├── .env                             # Environment variables
+├── .env.example
 └── Readme.md
 ```
 
