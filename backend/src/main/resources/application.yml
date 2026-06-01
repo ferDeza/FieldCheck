@@ -1,8 +1,10 @@
 logging:
   level:
     org.springframework.core.env: DEBUG
+
 server:
-  port: 8081
+  # Usa el puerto que te dé el servidor (Render usa 8080), si no hay ninguno, usa 8081 en local
+  port: ${SERVER_PORT:8081}
 
 spring:
   docker:
@@ -12,7 +14,8 @@ spring:
     name: field-check
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    # CLAVE: Ahora acepta la URL completa de Neon (DB_URL). Si no existe, usa localhost por defecto.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/field_check_db}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -24,8 +27,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # Añadimos el dialecto explícito para evitar fallos de autodetección en la nube
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+
 rsa:
   rsa-public-key: classpath:certs/public.pem
   rsa-private-key: classpath:certs/private.pem
-
