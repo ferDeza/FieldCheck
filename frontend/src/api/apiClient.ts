@@ -1,14 +1,29 @@
-// API configuration for connecting to backend
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
+
+// Configuración dinámica para Vite
+// En Vercel configurarás la variable de entorno como VITE_API_URL
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8081/api';
+
+// Función auxiliar para obtener las cabeceras con el token JWT de forma automática
+const getHeaders = (): HeadersInit => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  // Recuperamos el token que guardas en el navegador al hacer login
+  const token = localStorage.getItem('token'); 
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
 
 export const apiClient = {
   async get<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+      headers: getHeaders(),
     });
     
     if (!response.ok) {
@@ -21,11 +36,8 @@ export const apiClient = {
   async post<T>(endpoint: string, body: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(body),
-      credentials: 'include',
     });
     
     if (!response.ok) {
@@ -38,11 +50,8 @@ export const apiClient = {
   async put<T>(endpoint: string, body: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(body),
-      credentials: 'include',
     });
     
     if (!response.ok) {
@@ -55,10 +64,7 @@ export const apiClient = {
   async delete<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+      headers: getHeaders(),
     });
     
     if (!response.ok) {
