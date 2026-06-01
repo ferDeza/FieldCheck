@@ -1,8 +1,7 @@
 
 // Configuración dinámica para Vite
 // En Vercel configurarás la variable de entorno como VITE_API_URL
-const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8081/api';
-
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
 // Función auxiliar para obtener las cabeceras con el token JWT de forma automática
 const getHeaders = (): HeadersInit => {
   const headers: Record<string, string> = {
