@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react'; // Añadido useCallback
 import { useNavigate } from 'react-router-dom';
 import { sportFieldService } from '../services/api';
 import './SportFields.css';
@@ -15,11 +15,8 @@ const SportFields = () => {
   const districts = ['Cayma', 'Yanahuara', 'Cercado', 'La Joya', 'Sachaca', 'Socabaya'];
   const sportTypes = ['Fútbol 5', 'Fútbol 7', 'Fútbol 11', 'Vóley'];
 
-  useEffect(() => {
-    fetchSportFields();
-  }, [selectedDistrict, selectedType]);
-
-  const fetchSportFields = async () => {
+  // Envolvemos la función con useCallback para estabilizar su referencia
+  const fetchSportFields = useCallback(async () => {
     try {
       setLoading(true);
       const data = await sportFieldService.getAllSportFields(
@@ -33,7 +30,12 @@ const SportFields = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDistrict, selectedType]); // Reacciona de forma segura si cambian estos filtros
+
+  // Ahora fetchSportFields es una dependencia válida y segura
+  useEffect(() => {
+    fetchSportFields();
+  }, [fetchSportFields]);
 
   const filteredFields = fields.filter(
     (field) =>
