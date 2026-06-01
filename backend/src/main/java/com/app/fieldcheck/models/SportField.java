@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
 @Entity
 @Data
@@ -30,6 +32,25 @@ public class SportField {
     private Double basePrice;
 
     private String description;
+
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
+
+    @Column(name = "rating")
+    private Double rating;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "sportField", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Schedule> schedules;
 }
 
 

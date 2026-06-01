@@ -1,6 +1,6 @@
 package com.app.fieldcheck.web.dtos;
 
-import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -13,9 +13,9 @@ public class BookingRequest {
     @NotNull(message = "El Id de la cancha es obligatorio")
     private Long fieldId;
     @NotNull(message = "La fecha de inicio es obligatorio")
-    @Future(message = "La fecha de inicio debe ser futura")
+    @FutureOrPresent(message = "La fecha de inicio debe ser futura o presente")
     private LocalDateTime startTime;
-    @Future(message = "El fin debe ser futuro")
+    @FutureOrPresent(message = "El fin debe ser futuro o presente")
     @NotNull(message = "La fecha de fin es obligatoria")
     private LocalDateTime endTime;
 }

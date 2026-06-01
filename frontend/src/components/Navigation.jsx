@@ -1,59 +1,79 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navigation.css';
+import logoCanchaYa from '../assests/canchaYa-remove.png';
 
 const Navigation = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    const confirmacion = window.confirm("¿Quieres salir de la sesión?");
+    if (confirmacion) {
+      logout();
+      navigate('/login');
+    }
   };
+
+  // Función para manejar las clases activas de forma limpia
+  const getNavLinkClass = ({ isActive }) => 
+    isActive ? 'nav-link active-tab' : 'nav-link';
+
+  // Verificar si el usuario es admin
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="nav-logo">
-          <span className="logo-icon">⚽</span>
-          FieldCheck
+          <img 
+            src={logoCanchaYa} 
+            alt="CanchaYa" 
+            className="logo-icon" 
+            style={{ height: '120px' }} 
+          />
         </Link>
 
         {isAuthenticated ? (
           <ul className="nav-menu">
             <li className="nav-item">
-              <Link to="/dashboard" className="nav-link">
-                Dashboard
-              </Link>
+              <NavLink to="/dashboard" className={getNavLinkClass}>Inicio</NavLink>
             </li>
-            <li className="nav-item">
-              <Link to="/sport-fields" className="nav-link">
-                Sport Fields
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/bookings" className="nav-link">
-                Bookings
-              </Link>
-            </li>
-            <li className="nav-item">
+            {isAdmin && (
+              <li className="nav-item">
+                <NavLink to="/admin-dashboard" className={getNavLinkClass}>
+                  📊 Admin
+                </NavLink>
+              </li>
+            )}
+            {!isAdmin && (
+              <>
+                <li className="nav-item">
+                  <NavLink to="/sport-fields" className={getNavLinkClass}>Canchas</NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink to="/bookings" className={getNavLinkClass}>Mis Reservas</NavLink>
+                </li>
+              </>
+            )}
+            <li className="nav-item user-menu">
               <button className="nav-link logout-btn" onClick={handleLogout}>
-                Logout
+                Salir
               </button>
             </li>
           </ul>
         ) : (
           <ul className="nav-menu">
             <li className="nav-item">
-              <Link to="/login" className="nav-link">
+              <NavLink to="/login" className={getNavLinkClass}>
                 Login
-              </Link>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <Link to="/register" className="nav-link register-link">
-                Register
-              </Link>
+              <NavLink to="/register" className={getNavLinkClass}>
+                Registro
+              </NavLink>
             </li>
           </ul>
         )}

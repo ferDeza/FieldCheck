@@ -26,6 +26,10 @@ public class Booking {
     @Column(nullable = false)
     private Double totalPrice;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean paid = false;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="field_id",nullable = false)
     private SportField sportField;

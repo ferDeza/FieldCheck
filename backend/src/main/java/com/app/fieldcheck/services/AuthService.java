@@ -5,6 +5,7 @@ import com.app.fieldcheck.enums.UserRole;
 import com.app.fieldcheck.models.User;
 import com.app.fieldcheck.repositories.UserRepository;
 import com.app.fieldcheck.web.dtos.LoginRequest;
+import com.app.fieldcheck.web.dtos.LoginResponse;
 import com.app.fieldcheck.web.dtos.RegisterRequest;
 import com.app.fieldcheck.web.dtos.UserResponse;
 import jakarta.transaction.Transactional;
@@ -34,8 +35,9 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Email ya registrado");
         }
         String encodedPassword = passwordEncoder.encode(request.password());
+        String fullName = request.firstName() + " " + request.lastName();
         User user = User.builder().
-                fullName(request.fullName()).
+                fullName(fullName).
                 email(request.email()).
                 password(encodedPassword).
                 role(UserRole.CUSTOMER).
@@ -47,7 +49,7 @@ public class AuthService {
                 savedUser.getRole().name());
     }
 
-    public String login(LoginRequest loginRequest){
+    public LoginResponse login(LoginRequest loginRequest){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.email(),
@@ -55,6 +57,10 @@ public class AuthService {
                 )
         );
 
-        return tokenService.generateToken(authentication);
+        User user = userRepository.findByEmail(loginRequest.email())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+        
+        String token = tokenService.generateToken(authentication);
+        return new LoginResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
     }
 }

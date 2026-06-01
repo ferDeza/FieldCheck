@@ -97,8 +97,16 @@ export const bookingService = {
  * Sport Field Service
  */
 export const sportFieldService = {
-  getAllSportFields: async () => {
-    const response = await fetch(`${API_BASE_URL}/fields`, {
+  getAllSportFields: async (district, type) => {
+    let url = `${API_BASE_URL}/fields`;
+    const params = new URLSearchParams();
+    if (district) params.append('district', district);
+    if (type) params.append('type', type);
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeader(),
     });
@@ -122,6 +130,99 @@ export const sportFieldService = {
       throw new Error(error.message || 'Failed to create sport field');
     }
 
+    return await response.json();
+  },
+};
+
+/**
+ * Schedule Service
+ */
+export const scheduleService = {
+  getSchedulesByField: async (fieldId) => {
+    const response = await fetch(`${API_BASE_URL}/schedules/field/${fieldId}`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch schedules');
+    }
+
+    return await response.json();
+  },
+
+  createSchedule: async (scheduleData) => {
+    const response = await fetch(`${API_BASE_URL}/schedules`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(scheduleData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create schedule');
+    }
+
+    return await response.json();
+  },
+};
+
+/**
+ * Admin Service
+ */
+export const adminService = {
+  getDashboard: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch admin dashboard');
+    }
+
+    return await response.json();
+  },
+
+  getBookingsForToday: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/bookings-today`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch today bookings');
+    }
+
+    return await response.json();
+  },
+};
+
+/**
+ * Payment Service (frontend stubs)
+ */
+export const paymentService = {
+  createPayment: async (bookingId, payerId, amount, method) => {
+    const response = await fetch(`${API_BASE_URL}/v1/payments?bookingId=${bookingId}&payerId=${payerId}&amount=${amount}&method=${encodeURIComponent(method)}`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message || 'Failed to create payment');
+    }
+    return await response.json();
+  },
+
+  confirmPayment: async (paymentId) => {
+    const response = await fetch(`${API_BASE_URL}/v1/payments/${paymentId}/confirm`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message || 'Failed to confirm payment');
+    }
     return await response.json();
   },
 };

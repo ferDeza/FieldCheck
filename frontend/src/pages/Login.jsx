@@ -20,8 +20,13 @@ const Login = () => {
     try {
       const response = await authService.login(email, password);
       
-      // Assuming the response contains { token: '...' }
-      const userData = { email };
+      // Response now includes: token, userId, email, fullName, role
+      const userData = {
+        id: response.userId,
+        email: response.email,
+        fullName: response.fullName,
+        role: response.role,
+      };
       login(userData, response.token);
       navigate('/dashboard');
     } catch (err) {
@@ -36,14 +41,14 @@ const Login = () => {
       <div className="auth-card">
         <div className="auth-header">
           <h1>Login</h1>
-          <p>Welcome back to FieldCheck</p>
+          <p>Bienvenido a CanchaYa</p>
         </div>
 
         {error && <div className="error-alert">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">Direccion de Email</label>
             <input
               type="email"
               id="email"
@@ -55,7 +60,7 @@ const Login = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Contraseña</label>
             <input
               type="password"
               id="password"
@@ -77,9 +82,9 @@ const Login = () => {
 
         <div className="auth-footer">
           <p>
-            Don't have an account?{' '}
+            ¿No tienes una cuenta?{' '}
             <Link to="/register" className="auth-link">
-              Register here
+              Regístrate aquí
             </Link>
           </p>
         </div>

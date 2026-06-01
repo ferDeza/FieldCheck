@@ -1,9 +1,13 @@
 package com.app.fieldcheck.web.dtos;
 
+import java.time.LocalDateTime;
+
 public record BookingWebDTO (
      Long id,
      String customerName ,
      String fieldName,
-     String schedule,
-     Double price
+     LocalDateTime startDateTime,
+     LocalDateTime endDateTime,
+     Double price,
+     Boolean paid
 ){}

@@ -63,8 +63,8 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Create Account</h1>
-          <p>Join FieldCheck to book your favourite sports fields</p>
+          <h1>Crea tu cuenta</h1>
+          <p>Unete a CanchaYa y reserva tus canchas deportivas favoritas</p>
         </div>
 
         {error && <div className="error-alert">{error}</div>}
@@ -72,7 +72,7 @@ const Register = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstName">First Name</label>
+              <label htmlFor="firstName">Primer nombre</label>
               <input
                 type="text"
                 id="firstName"
@@ -85,7 +85,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="lastName">Last Name</label>
+              <label htmlFor="lastName">Apellido</label>
               <input
                 type="text"
                 id="lastName"
@@ -99,7 +99,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">Direccion de Email</label>
             <input
               type="email"
               id="email"
@@ -112,7 +112,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
+            <label htmlFor="phone">Número de Teléfono</label>
             <input
               type="tel"
               id="phone"
@@ -126,7 +126,7 @@ const Register = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">Contraseña</label>
               <input
                 type="password"
                 id="password"
@@ -139,7 +139,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">Confirmar Contraseña</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -157,15 +157,15 @@ const Register = () => {
             className="submit-btn"
             disabled={loading}
           >
-            {loading ? 'Creating Account...' : 'Register'}
+            {loading ? 'Creating Account...' : 'Registrarse'}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Already have an account?{' '}
+            ¿Ya tienes una cuenta?{' '}
             <Link to="/login" className="auth-link">
-              Login here
+              Inicia sesión aquí
             </Link>
           </p>
         </div>

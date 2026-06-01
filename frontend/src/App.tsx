@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Bookings from './pages/Bookings';
 import SportFields from './pages/SportFields';
+import AdminDashboard from './pages/AdminDashboard';
+import Payment from './pages/Payment';
 
 
 function App() {
@@ -28,8 +30,14 @@ function App() {
               <Route path="/dashboard" element={
                 <ProtectedRoute><Dashboard /></ProtectedRoute>
               } />
+              <Route path="/admin-dashboard" element={
+                <ProtectedRoute><AdminDashboard /></ProtectedRoute>
+              } />
               <Route path="/bookings" element={
                 <ProtectedRoute><Bookings /></ProtectedRoute>
+              } />
+              <Route path="/payment" element={
+                <ProtectedRoute><Payment /></ProtectedRoute>
               } />
               <Route path="/sport-fields" element={
                 <ProtectedRoute><SportFields /></ProtectedRoute>

@@ -34,8 +34,10 @@ public class BookingService {
                    booking.getId(),
                    booking.getUser().getFullName(),
                    booking.getSportField().getName(),
-                   booking.getStartDateTime().toString()+ " a "+ booking.getEndDateTime(),
+                   booking.getStartDateTime(),
+                   booking.getEndDateTime(),
                    booking.getTotalPrice()
+                         ,booking.getPaid()
                 )).toList();
     }
 
@@ -65,11 +67,13 @@ public class BookingService {
         Booking saved = bookingRepository.save(newBooking);
 
         return new BookingWebDTO(
-                saved.getId(),
-                user.getFullName(),
-                field.getName(),
-                saved.getStartDateTime()+"a"+saved.getEndDateTime(),
-                saved.getTotalPrice()
+            saved.getId(),
+            user.getFullName(),
+            field.getName(),
+            saved.getStartDateTime(),
+            saved.getEndDateTime(),
+            saved.getTotalPrice(),
+            saved.getPaid()
         );
     }
 

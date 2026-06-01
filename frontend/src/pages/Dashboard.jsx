@@ -33,8 +33,8 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Welcome, {user?.email || 'User'}! 👋</h1>
-        <p>Here's what's happening with your sports bookings</p>
+        <h1>Bienvenido, {user?.fullName || 'User'}!</h1>
+        <p>Aquí está lo que está sucediendo con tus reservas deportivas</p>
       </div>
 
       {error && <div className="error-alert">{error}</div>}
@@ -48,7 +48,7 @@ const Dashboard = () => {
               <div className="stat-icon">⚽</div>
               <div className="stat-content">
                 <h3>{fieldCount}</h3>
-                <p>Sport Fields Available</p>
+                <p>Canchas Disponibles</p>
               </div>
             </Link>
 
@@ -56,37 +56,37 @@ const Dashboard = () => {
               <div className="stat-icon">📅</div>
               <div className="stat-content">
                 <h3>{bookingCount}</h3>
-                <p>Your Bookings</p>
+                <p>Tus Reservas</p>
               </div>
             </Link>
           </div>
 
           <div className="quick-actions">
-            <h2>Quick Actions</h2>
+            <h2>Acciones Rápidas</h2>
             <div className="action-buttons">
               <Link to="/sport-fields" className="action-btn primary">
-                Browse Sport Fields
+                Explorar Canchas
               </Link>
               <Link to="/bookings" className="action-btn secondary">
-                View My Bookings
+                Ver Mis Reservas
               </Link>
             </div>
           </div>
 
           <div className="dashboard-info">
-            <h2>Getting Started</h2>
+            <h2>Empecemos</h2>
             <div className="info-cards">
               <div className="info-card">
-                <h3>📍 Find Fields</h3>
-                <p>Browse available sport fields in your area and check their availability.</p>
+                <h3>📍 Encontrar Canchas</h3>
+                <p>Explora las canchas deportivas disponibles en tu área y verifica su disponibilidad.</p>
               </div>
               <div className="info-card">
-                <h3>🎫 Make Bookings</h3>
-                <p>Reserve your preferred time slots and secure your spot.</p>
+                <h3>🎫 Hacer Reservas</h3>
+                <p>Reserva tu espacio preferido y asegura tu lugar.</p>
               </div>
               <div className="info-card">
-                <h3>📋 Manage Bookings</h3>
-                <p>View, modify, or cancel your bookings anytime.</p>
+                <h3>📋 Controla tus reservas</h3>
+                <p>Visualiza, modifica o cancela tus reservas en cualquier momento.</p>
               </div>
             </div>
           </div>

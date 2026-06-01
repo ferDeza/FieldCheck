@@ -1,64 +1,200 @@
 import React, { useEffect, useState } from 'react';
-import { bookingService, sportFieldService } from '../services/api';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { bookingService, sportFieldService, scheduleService } from '../services/api';
+import ScheduleWeeklyView from '../components/ScheduleWeeklyView';
 import './Bookings.css';
 
 const Bookings = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [sportFields, setSportFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [selectedFieldSchedules, setSelectedFieldSchedules] = useState([]);
+  const [selectedTimes, setSelectedTimes] = useState([]); // Track multiple selected times
   const [formData, setFormData] = useState({
-    sportFieldId: '',
-    startDateTime: '',
-    endDateTime: '',
-    notes: '',
+    userId: user?.id || null,
+    fieldId: '',
+    bookingDate: new Date().toISOString().split('T')[0], // Today's date
+    startTime: '',
+    endTime: '',
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Update userId when user loads from auth context
+  useEffect(() => {
+    if (user?.id) {
+      setFormData((prev) => ({
+        ...prev,
+        userId: user.id,
+      }));
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Pre-select field if fieldId is in query params
+    const fieldIdFromParams = searchParams.get('fieldId');
+    if (fieldIdFromParams) {
+      // Pre-select field even if sportFields is still loading
+      setFormData((prev) => ({
+        ...prev,
+        fieldId: fieldIdFromParams,
+      }));
+      // Load schedules for this field
+      loadSchedulesForField(fieldIdFromParams);
+      // Show form automatically
+      setShowForm(true);
+    }
+  }, [searchParams]);
+
   const fetchData = async () => {
     try {
-      const [bookingsData, fieldsData] = await Promise.all([
-        bookingService.getAllBookings(),
-        sportFieldService.getAllSportFields(),
-      ]);
-      setBookings(bookingsData);
+      const fieldsData = await sportFieldService.getAllSportFields();
       setSportFields(fieldsData);
       setError('');
     } catch (err) {
-      setError(err.message || 'Failed to load data');
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Failed to load sport fields');
+    }
+
+    // Try to load bookings but don't block if it fails
+    try {
+      const bookingsData = await bookingService.getAllBookings();
+      setBookings(bookingsData);
+    } catch (err) {
+      console.warn('Could not load bookings:', err.message);
+      setBookings([]);
+    }
+
+    setLoading(false);
+  };
+
+  const loadSchedulesForField = async (fieldId) => {
+    try {
+      const schedules = await scheduleService.getSchedulesByField(fieldId);
+      setSelectedFieldSchedules(schedules);
+    } catch (err) {
+      console.error('Error fetching schedules:', err);
+      setSelectedFieldSchedules([]);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleFieldChange = async (e) => {
+    const fieldId = e.target.value;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      fieldId: fieldId,
+      startTime: '',
+      endTime: '',
     }));
+
+    if (fieldId) {
+      loadSchedulesForField(fieldId);
+    }
+  };
+
+  const handleDateChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      bookingDate: e.target.value,
+    }));
+  };
+
+  const handleTimeSelect = (timeData) => {
+    const timeKey = `${timeData.day}-${timeData.hour}`;
+    
+    // Agregar o remover hora del listado
+    let newSelectedTimes;
+    if (selectedTimes.includes(timeKey)) {
+      newSelectedTimes = selectedTimes.filter(t => t !== timeKey);
+    } else {
+      newSelectedTimes = [...selectedTimes, timeKey];
+    }
+    
+    setSelectedTimes(newSelectedTimes);
+
+    // Si hay horarios seleccionados, calcular el rango
+    if (newSelectedTimes.length > 0) {
+      // Obtener todos los horarios del mismo día
+      const dayTimes = newSelectedTimes
+        .map(t => {
+          const parts = t.split('-');
+          return { day: parts[0], hour: parseInt(parts[1]) };
+        })
+        .sort((a, b) => a.hour - b.hour);
+
+      if (dayTimes.length > 0) {
+        const startHour = dayTimes[0].hour;
+        const endHour = dayTimes[dayTimes.length - 1].hour + 1; // +1 porque cada slot es de 1 hora
+
+        setFormData((prev) => ({
+          ...prev,
+          startTime: startHour,
+          endTime: endHour,
+        }));
+      }
+    } else {
+      // Si no hay horarios seleccionados, limpiar
+      setFormData((prev) => ({
+        ...prev,
+        startTime: '',
+        endTime: '',
+      }));
+    }
   };
 
   const handleCreateBooking = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!formData.fieldId || !formData.startTime || !formData.endTime) {
+      setError('Por favor completa todos los campos');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      await bookingService.createBooking(formData);
+      const bookingData = {
+        userId: formData.userId,
+        fieldId: parseInt(formData.fieldId),
+        startTime: `${formData.bookingDate}T${String(formData.startTime).padStart(2, '0')}:00:00`,
+        endTime: `${formData.bookingDate}T${String(formData.endTime).padStart(2, '0')}:00:00`,
+      };
+
+      const response = await bookingService.createBooking(bookingData);
+      
+      // Preparar datos para la pantalla de pago
+      const bookingForPayment = {
+        id: response.id,
+        fieldName: getFieldName(formData.fieldId),
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        bookingDate: formData.bookingDate,
+        totalPrice: getFieldPrice(formData.fieldId) * (formData.endTime - formData.startTime),
+      };
+
+      // Resetear formulario
       setFormData({
-        sportFieldId: '',
-        startDateTime: '',
-        endDateTime: '',
-        notes: '',
+        userId: user?.id || null,
+        fieldId: '',
+        bookingDate: new Date().toISOString().split('T')[0],
+        startTime: '',
+        endTime: '',
       });
+      setSelectedTimes([]);
+      setSelectedFieldSchedules([]);
       setShowForm(false);
-      await fetchData();
+
+      // Redirigir a pantalla de pago
+      navigate('/payment', { state: { booking: bookingForPayment } });
     } catch (err) {
       setError(err.message || 'Failed to create booking');
     } finally {
@@ -67,7 +203,7 @@ const Bookings = () => {
   };
 
   const handleDeleteBooking = async (id) => {
-    if (window.confirm('Are you sure you want to delete this booking?')) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta reserva?')) {
       try {
         await bookingService.deleteBooking(id);
         await fetchData();
@@ -78,19 +214,26 @@ const Bookings = () => {
   };
 
   const getFieldName = (fieldId) => {
-    const field = sportFields.find((f) => f.id === fieldId);
+    const numericFieldId = parseInt(fieldId);
+    const field = sportFields.find((f) => f.id === numericFieldId);
     return field?.name || 'Unknown Field';
+  };
+
+  const getFieldPrice = (fieldId) => {
+    const numericFieldId = parseInt(fieldId);
+    const field = sportFields.find((f) => f.id === numericFieldId);
+    return field?.basePrice || 0;
   };
 
   return (
     <div className="bookings-container">
       <div className="bookings-header">
-        <h1>My Bookings</h1>
+        <h1>Mis Reservas</h1>
         <button
           className="btn btn-primary"
           onClick={() => setShowForm(!showForm)}
         >
-          {showForm ? '✕ Cancel' : '+ New Booking'}
+          {showForm ? '✕ Cancelar' : '+ Nueva Reserva'}
         </button>
       </div>
 
@@ -98,139 +241,183 @@ const Bookings = () => {
 
       {showForm && (
         <div className="booking-form-card">
-          <h2>Create New Booking</h2>
+          <h2>Crea una nueva reserva</h2>
           <form onSubmit={handleCreateBooking}>
             <div className="form-group">
-              <label htmlFor="sportFieldId">Sport Field</label>
+              <label htmlFor="fieldId">Selecciona una Cancha</label>
               <select
-                id="sportFieldId"
-                name="sportFieldId"
-                value={formData.sportFieldId}
-                onChange={handleInputChange}
+                id="fieldId"
+                name="fieldId"
+                value={formData.fieldId}
+                onChange={handleFieldChange}
                 required
+                className="form-control"
               >
-                <option value="">Select a sport field</option>
+                <option value="">-- Selecciona una cancha deportiva --</option>
                 {sportFields.map((field) => (
                   <option key={field.id} value={field.id}>
-                    {field.name}
+                    {field.name} (S/. {field.basePrice}/hora)
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="startDateTime">Start Date & Time</label>
-                <input
-                  type="datetime-local"
-                  id="startDateTime"
-                  name="startDateTime"
-                  value={formData.startDateTime}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
+            {formData.fieldId && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="bookingDate">Fecha de Reserva</label>
+                  <input
+                    id="bookingDate"
+                    type="date"
+                    value={formData.bookingDate}
+                    onChange={handleDateChange}
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="schedule-section">
+                  <h3>Selecciona tu horario</h3>
+                  <ScheduleWeeklyView
+                    fieldId={formData.fieldId}
+                    schedules={selectedFieldSchedules}
+                    onTimeSelect={handleTimeSelect}
+                    selectedTimes={selectedTimes}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="endDateTime">End Date & Time</label>
-                <input
-                  type="datetime-local"
-                  id="endDateTime"
-                  name="endDateTime"
-                  value={formData.endDateTime}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
+                <div className="booking-summary">
+                  <h3>Resumen de la Reserva</h3>
+                  <div className="summary-item">
+                    <span>Cancha:</span>
+                    <strong>{getFieldName(formData.fieldId)}</strong>
+                  </div>
+                  {formData.startTime && (
+                    <div className="summary-item">
+                      <span>Horario:</span>
+                      <strong>
+                        {String(formData.startTime).padStart(2, '0')}:00 -{' '}
+                        {String(formData.endTime).padStart(2, '0')}:00
+                      </strong>
+                    </div>
+                  )}
+                  {formData.startTime && (
+                    <div className="summary-item price-row">
+                      <span>Costo Total:</span>
+                      <strong>
+                        S/. {(getFieldPrice(formData.fieldId) * (formData.endTime - formData.startTime)).toFixed(2)}
+                      </strong>
+                    </div>
+                  )}
+                </div>
 
-            <div className="form-group">
-              <label htmlFor="notes">Notes</label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                placeholder="Any additional notes..."
-                rows="3"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={submitting}
-            >
-              {submitting ? 'Creating...' : 'Create Booking'}
-            </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={submitting || !formData.startTime}
+                >
+                  {submitting ? 'Procesando...' : 'Confirmar Reserva'}
+                </button>
+              </>
+            )}
           </form>
         </div>
       )}
 
       {loading ? (
-        <div className="loading-spinner">Loading bookings...</div>
+        <div className="loading-spinner">Cargando reservas...</div>
       ) : (
         <>
           {bookings.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📭</div>
-              <h3>No bookings yet</h3>
-              <p>Create your first booking to get started</p>
+              <h3>No tienes reservas aún</h3>
+              <p>Crea tu primera reserva para empezar</p>
               <button
                 className="btn btn-primary"
                 onClick={() => setShowForm(true)}
               >
-                Create Booking
+                Crear Mi Primera Reserva
               </button>
             </div>
           ) : (
-            <div className="bookings-grid">
+            <div className="bookings-list">
+              <div className="list-header">
+                <h2>Tus Reservas</h2>
+                <span className="count-badge">{bookings.length}</span>
+              </div>
+
               {bookings.map((booking) => (
                 <div key={booking.id} className="booking-card">
                   <div className="booking-header">
-                    <h3>{getFieldName(booking.sportFieldId)}</h3>
+                    <div className="booking-title">
+                      <h3>{booking.fieldName}</h3>
+                      <span className="booking-id">#{booking.id}</span>
+                    </div>
                     <button
                       className="btn-delete"
                       onClick={() => handleDeleteBooking(booking.id)}
-                      title="Delete booking"
+                      title="Eliminar reserva"
                     >
                       ✕
                     </button>
                   </div>
-                  
-                  <div className="booking-details">
-                    <div className="detail">
-                      <span className="label">📅 Date</span>
-                      <span className="value">
-                        {new Date(booking.startDateTime).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="detail">
-                      <span className="label">⏰ Time</span>
-                      <span className="value">
-                        {new Date(booking.startDateTime).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}{' '}
-                        -{' '}
-                        {new Date(booking.endDateTime).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-                    {booking.notes && (
-                      <div className="detail">
-                        <span className="label">📝 Notes</span>
-                        <span className="value">{booking.notes}</span>
+
+                  <div className="booking-details-grid">
+                    <div className="detail-item">
+                      <span className="detail-icon">📅</span>
+                      <div className="detail-content">
+                        <span className="detail-label">Fecha</span>
+                        <span className="detail-value">
+                          {new Date(booking.startDateTime).toLocaleDateString('es-PE', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </span>
                       </div>
-                    )}
+                    </div>
+
+                    <div className="detail-item">
+                      <span className="detail-icon">⏰</span>
+                      <div className="detail-content">
+                        <span className="detail-label">Horario</span>
+                        <span className="detail-value">
+                          {new Date(booking.startDateTime).toLocaleTimeString('es-PE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}{' '}
+                          -{' '}
+                          {new Date(booking.endDateTime).toLocaleTimeString('es-PE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="detail-item">
+                      <span className="detail-icon">💰</span>
+                      <div className="detail-content">
+                        <span className="detail-label">Precio</span>
+                        <span className="detail-value">S/. {booking.price.toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    <div className="detail-item">
+                      <span className="detail-icon">✓</span>
+                      <div className="detail-content">
+                        <span className="detail-label">Estado</span>
+                        <span className="detail-value status-confirmed">Confirmado</span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="booking-status">
-                    <span className={`status-badge ${booking.status?.toLowerCase()}`}>
-                      {booking.status || 'Active'}
-                    </span>
+
+                  <div className="booking-actions">
+                    <button className="btn-action secondary">Editar</button>
+                    <button className="btn-action danger" onClick={() => handleDeleteBooking(booking.id)}>
+                      Cancelar
+                    </button>
                   </div>
                 </div>
               ))}

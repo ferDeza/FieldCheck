@@ -2,7 +2,7 @@
 FROM gradle:8.14-jdk21 AS builder
 WORKDIR /app
 COPY . .
-RUN gradle clean build -x test
+RUN chmod +x ./gradlew && ./gradlew clean build -x test
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

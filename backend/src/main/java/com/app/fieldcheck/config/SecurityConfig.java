@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests.
                                 requestMatchers("/api/v1/auth/**","/login", "/css/**", "/js/**").permitAll().
-                                requestMatchers("/api/v1/booking/**").hasRole("ADMIN").
+                                requestMatchers("/api/v1/booking/**").authenticated().
                                 requestMatchers("/view/bookings/delete/**").hasRole("ADMIN").
                                 requestMatchers("/view/bookings/new","/view/bookings/save").authenticated().anyRequest()
                         .permitAll()).
