@@ -64,9 +64,9 @@ const Bookings = () => {
       setError(err.message || 'Failed to load sport fields');
     }
 
-    // Try to load bookings but don't block if it fails
+    // Try to load bookings but don't block if it failsgetMyBookings
     try {
-      const bookingsData = await bookingService.getAllBookings();
+      const bookingsData = await bookingService.getMyBookings();
       setBookings(bookingsData);
     } catch (err) {
       console.warn('Could not load bookings:', err.message);
