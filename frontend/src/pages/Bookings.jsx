@@ -66,7 +66,7 @@ const Bookings = () => {
 
     // Try to load bookings but don't block if it fails
     try {
-      const bookingsData = await bookingService.getMyBookings();
+      const bookingsData = await bookingService.getAllBookings();
       setBookings(bookingsData);
     } catch (err) {
       console.warn('Could not load bookings:', err.message);
