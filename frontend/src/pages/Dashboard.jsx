@@ -15,7 +15,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const [bookings, fields] = await Promise.all([
-          bookingService.getAllBookings(),
+          bookingService.getMyBookings(),
           sportFieldService.getAllSportFields(),
         ]);
         setBookingCount(bookings.length);
