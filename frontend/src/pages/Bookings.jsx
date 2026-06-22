@@ -86,69 +86,90 @@ const Bookings = () => {
     }
   };
 
-  const handleFieldChange = async (e) => {
-    const fieldId = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      fieldId: fieldId,
-      startTime: '',
-      endTime: '',
-    }));
+const handleFieldChange = async (e) => {
+  const fieldId = e.target.value;
+  setFormData((prev) => ({
+    ...prev,
+    fieldId: fieldId,
+    startTime: '',
+    endTime: '',
+  }));
+  
+  setSelectedTimes([]); // 🔥 Limpia los cuadros azules antiguos al cambiar de cancha
 
-    if (fieldId) {
-      loadSchedulesForField(fieldId);
-    }
-  };
+  if (fieldId) {
+    loadSchedulesForField(fieldId);
+  }
+};
 
-  const handleDateChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      bookingDate: e.target.value,
-    }));
-  };
+const handleDateChange = (e) => {
+  setFormData((prev) => ({
+    ...prev,
+    bookingDate: e.target.value,
+    startTime: '',
+    endTime: '',
+  }));
+
+  setSelectedTimes([]); // 🔥 Limpia los cuadros azules antiguos al cambiar la fecha manualmente
+};
 
   const handleTimeSelect = (timeData) => {
-    const timeKey = `${timeData.day}-${timeData.hour}`;
-    
-    // Agregar o remover hora del listado
-    let newSelectedTimes;
+  const timeKey = `${timeData.day}-${timeData.hour}`;
+  
+  // 1. Evitar selección multi-día: Averiguamos el día de la selección actual
+  const currentDay = selectedTimes.length > 0 ? selectedTimes[0].split('-')[0] : null;
+  let newSelectedTimes;
+  
+  if (currentDay && currentDay !== timeData.day) {
+    // Si hizo clic en un DÍA DIFERENTE, limpiamos lo anterior y dejamos solo el nuevo slot
+    newSelectedTimes = [timeKey];
+  } else {
+    // Si es el mismo día, aplicamos el toggle normal (agregar/quitar)
     if (selectedTimes.includes(timeKey)) {
       newSelectedTimes = selectedTimes.filter(t => t !== timeKey);
     } else {
       newSelectedTimes = [...selectedTimes, timeKey];
     }
+  }
+  
+  setSelectedTimes(newSelectedTimes);
+
+  // 2. Si hay horas seleccionadas en este día, calculamos el rango
+  if (newSelectedTimes.length > 0) {
+    const dayHours = newSelectedTimes
+      .map(t => parseInt(t.split('-')[1]))
+      .sort((a, b) => a - b);
+
+    const startHour = dayHours[0];
+    const endHour = dayHours[dayHours.length - 1] + 1; // +1 hora por el bloque completo
+
+    // 3. Sincronizar mágicamente el input de fecha con la columna cliqueada
+    const targetDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const baseDate = new Date(formData.bookingDate + 'T00:00:00');
+    const currentDayIdx = baseDate.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+    const targetDayIdx = targetDays.indexOf(timeData.day);
     
-    setSelectedTimes(newSelectedTimes);
+    if (targetDayIdx !== -1) {
+      const diff = targetDayIdx - currentDayIdx;
+      baseDate.setDate(baseDate.getDate() + diff); // Movemos los días necesarios
+      const updatedDate = baseDate.toISOString().split('T')[0];
 
-    // Si hay horarios seleccionados, calcular el rango
-    if (newSelectedTimes.length > 0) {
-      // Obtener todos los horarios del mismo día
-      const dayTimes = newSelectedTimes
-        .map(t => {
-          const parts = t.split('-');
-          return { day: parts[0], hour: parseInt(parts[1]) };
-        })
-        .sort((a, b) => a.hour - b.hour);
-
-      if (dayTimes.length > 0) {
-        const startHour = dayTimes[0].hour;
-        const endHour = dayTimes[dayTimes.length - 1].hour + 1; // +1 porque cada slot es de 1 hora
-
-        setFormData((prev) => ({
-          ...prev,
-          startTime: startHour,
-          endTime: endHour,
-        }));
-      }
-    } else {
-      // Si no hay horarios seleccionados, limpiar
       setFormData((prev) => ({
         ...prev,
-        startTime: '',
-        endTime: '',
+        bookingDate: updatedDate,
+        startTime: startHour,
+        endTime: endHour,
       }));
     }
-  };
+  } else {
+    // Si deseleccionó todo, limpiamos las horas del formulario
+    setFormData((prev) => ({
+      ...prev,
+      startTime: '',
+      endTime: '',
+    }));
+  }
+};
 
   const handleCreateBooking = async (e) => {
     e.preventDefault();
