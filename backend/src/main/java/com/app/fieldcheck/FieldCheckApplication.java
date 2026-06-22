@@ -150,16 +150,4 @@ public class FieldCheckApplication {
             }
         };
     }
-
-    @Bean
-    public CommandLineRunner cleanBookings(BookingRepository bookingRepository) {
-        return args -> {
-            // Limpiar todas las reservas antiguas para ahorrar espacio
-            long deletedCount = bookingRepository.count();
-            if (deletedCount > 0) {
-                bookingRepository.deleteAll();
-                System.out.println("✓ Limpiadas " + deletedCount + " reservas antiguas");
-            }
-        };
-    }
 }
