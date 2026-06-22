@@ -214,6 +214,22 @@ export const paymentService = {
     return await response.json();
   },
 
+  getMyBookings: async () => {
+  const response = await fetch(
+    `${API_BASE_URL}/v1/booking/my-bookings`,
+    {
+      method: 'GET',
+      headers: getAuthHeader(),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch bookings');
+  }
+
+  return await response.json();
+},
+
   confirmPayment: async (paymentId) => {
     const response = await fetch(`${API_BASE_URL}/v1/payments/${paymentId}/confirm`, {
       method: 'POST',
@@ -226,3 +242,5 @@ export const paymentService = {
     return await response.json();
   },
 };
+
+

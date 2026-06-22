@@ -87,4 +87,20 @@ public class BookingService {
         }
         bookingRepository.deleteById(Id);
     }
+
+    public List<BookingWebDTO> getBookingsByEmail(String email) {
+
+        return bookingRepository.findByUserEmail(email)
+                .stream()
+                .map(booking -> new BookingWebDTO(
+                        booking.getId(),
+                        booking.getUser().getFullName(),
+                        booking.getSportField().getName(),
+                        booking.getStartDateTime(),
+                        booking.getEndDateTime(),
+                        booking.getTotalPrice(),
+                        booking.getPaid()
+                ))
+                .toList();
+    }
 }
