@@ -8,15 +8,18 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Load token from localStorage on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-      // Optionally fetch user data here
-    }
-    setLoading(false);
-  }, []);
+useEffect(() => {
+  const storedToken = localStorage.getItem('token');
+  const storedUser = localStorage.getItem('user'); // ← faltaba esto
 
+  if (storedToken) {
+    setToken(storedToken);
+  }
+  if (storedUser) {
+    setUser(JSON.parse(storedUser)); // ← y esto
+  }
+  setLoading(false);
+}, []);
   const login = (userData, authToken) => {
     setUser(userData);
     setToken(authToken);
