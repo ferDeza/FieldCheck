@@ -1,33 +1,29 @@
-
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importado para redirigir intrusos
+import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import KPICard from '../components/KPICard';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { user, loading: authLoading } = useAuth(); // Asumiendo que useAuth maneja un estado de carga inicial
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   const [dashboard, setDashboard] = useState(null);
   const [bookingsToday, setBookingsToday] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // 1. CONTROL DE ACCESO EXCLUSIVO PARA ADMIN
-    // Si la autenticación ya cargó y el usuario no existe o no tiene el rol de ADMIN, se le banea.
-    // NOTA: Ajusta 'ADMIN' por el string exacto que devuelva tu JWT (ej. 'ROLE_ADMIN' o 'ADMIN')
-    if (!authLoading) {
-      if (!user || user.role !== 'ADMIN') {
-        console.warn('Acceso no autorizado detectado.');
-        navigate('/'); // Redirige al Home inmediatamente
-        return;
-      }
+    // Fix: si authLoading es true, espera — no ejecutes nada todavía
+    if (authLoading) return;
+
+    if (!user || user.role !== 'ADMIN') {
+      console.warn('Acceso no autorizado detectado.');
+      navigate('/');
+      return;
     }
 
-    // 2. CARGA DE DATOS REALES (Solo si es Administrador confirmado)
     const fetchData = async () => {
       try {
         const [dashData, todayBookings] = await Promise.all([
@@ -43,17 +39,13 @@ const AdminDashboard = () => {
       }
     };
 
-    if (user && user.role === 'ADMIN') {
-      fetchData();
-    }
+    fetchData();
   }, [user, authLoading, navigate]);
 
-  // Pantalla de espera mientras se valida el rol o se descargan los datos de la BD
   if (authLoading || loading) {
     return <div className="admin-loading">Cargando panel de administración...</div>;
   }
 
-  // Doble capa de seguridad para evitar parpadeos visuales de datos protegidos
   if (!user || user.role !== 'ADMIN') {
     return <div className="admin-error">Acceso denegado. Redirigiendo...</div>;
   }
@@ -62,57 +54,94 @@ const AdminDashboard = () => {
     return <div className="admin-error">{error}</div>;
   }
 
+  // Calculados desde bookingsToday (BookingWebDTO real)
+  const paidBookings    = bookingsToday.filter(b => b.paid);
+  const pendingBookings = bookingsToday.filter(b => !b.paid);
+  const paidTotal       = paidBookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0).toFixed(2);
+  const pendingTotal    = pendingBookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0).toFixed(2);
+
+  // Formatea "2025-06-22T08:00:00" → "08:00 – 09:00"
+  const formatRange = (start, end) => {
+    const fmt = (dt) =>
+      new Date(dt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+    return `${fmt(start)} – ${fmt(end)}`;
+  };
+
+  // Formatea fecha corta para recentBookings: "22 jun, 08:00"
+  const formatDateTime = (dt) =>
+    new Date(dt).toLocaleString('es-PE', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
   return (
     <div className="admin-dashboard-container">
       <div className="admin-header">
         <h1>Panel de Administración</h1>
-        <p>Bienvenido, {user?.name || 'Administrador'}</p>
+        <p>Bienvenido, {user?.fullName || 'Administrador'}</p>
       </div>
 
-      {/* KPI Cards Dinámicas */}
-      {dashboard && (
-        <div className="kpi-grid">
-          <KPICard
-            title="Reservas Hoy"
-            value={bookingsToday.length}
-            subtitle="Nuevas reservas"
-            icon="📅"
-          />
-          <KPICard
-            title="Pagos Confirmados"
-            value={`S/. ${bookingsToday.filter(b => b.paid).reduce((sum, b) => sum + (b.price || 0), 0).toFixed(2)}`}
-            subtitle={`${bookingsToday.filter(b => b.paid).length} pagos`}
-            icon="✓"
-          />
-          <KPICard
-            title="Pagos Pendientes"
-            value={`S/. ${bookingsToday.filter(b => !b.paid).reduce((sum, b) => sum + (b.price || 0), 0).toFixed(2)}`}
-            subtitle={`${bookingsToday.filter(b => !b.paid).length} pendientes`}
-            icon="⏳"
-          />
-          <KPICard
-            title="Canchas Activas"
-            value={dashboard.activeSportFields}
-            subtitle="Todas operativas"
-            icon="⚽"
-          />
-        </div>
-      )}
+      {/* KPIs — todos con campos reales del AdminDashboardDTO */}
+      <div className="kpi-grid">
+        <KPICard
+          title="Total Reservas"
+          value={dashboard?.totalReservations ?? 0}
+          subtitle="Todas las reservas"
+          icon="📋"
+        />
+        <KPICard
+          title="Ingresos Totales"
+          value={`S/. ${(dashboard?.totalRevenue ?? 0).toFixed(2)}`}
+          subtitle="Acumulado"
+          icon="💰"
+        />
+        <KPICard
+          title="Clientes Activos"
+          value={dashboard?.activeCustomers ?? 0}
+          subtitle="Usuarios registrados"
+          icon="👥"
+        />
+        <KPICard
+          title="Canchas Activas"
+          value={dashboard?.activeSportFields ?? 0}
+          subtitle="Todas operativas"
+          icon="⚽"
+        />
+      </div>
 
-      {/* Tabla de Próximas Reservas Reales */}
+      {/* Resumen del día — calculado desde getBookingsForToday */}
+      <div className="admin-today-summary">
+        <div className="today-stat">
+          <span className="today-stat-value">{bookingsToday.length}</span>
+          <span className="today-stat-label">Reservas hoy</span>
+        </div>
+        <div className="today-stat green">
+          <span className="today-stat-value">S/. {paidTotal}</span>
+          <span className="today-stat-label">{paidBookings.length} pagos confirmados</span>
+        </div>
+        <div className="today-stat amber">
+          <span className="today-stat-value">S/. {pendingTotal}</span>
+          <span className="today-stat-label">{pendingBookings.length} pagos pendientes</span>
+        </div>
+      </div>
+
+      {/* Tabla de reservas de hoy — campos reales de BookingWebDTO */}
       <div className="admin-section">
-        <h2>Próximas Reservas de Hoy</h2>
+        <div className="admin-section-header">
+          <h2>Reservas de Hoy</h2>
+          <span className="admin-section-count">{bookingsToday.length} reservas</span>
+        </div>
         <div className="bookings-table-wrapper">
           <table className="bookings-table">
             <thead>
               <tr>
-                <th>Hora</th>
+                <th>Horario</th>
                 <th>Cancha</th>
                 <th>Cliente</th>
-                <th>Teléfono</th>
                 <th>Monto</th>
                 <th>Pago</th>
-                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -120,21 +149,28 @@ const AdminDashboard = () => {
               {bookingsToday.length > 0 ? (
                 bookingsToday.map((booking) => (
                   <tr key={booking.id}>
-                    <td className="time-cell">{booking.schedule}</td>
+                    {/* startDateTime + endDateTime reales */}
+                    <td className="time-cell">
+                      {formatRange(booking.startDateTime, booking.endDateTime)}
+                    </td>
+                    {/* fieldName real */}
                     <td>{booking.fieldName}</td>
+                    {/* customerName real (fullName del User) */}
                     <td>{booking.customerName}</td>
-                    <td>{booking.customerPhone || 'Sin teléfono'}</td>
-                    <td className="price-cell">S/. {booking.price.toFixed(2)}</td>
+                    {/* totalPrice real — con fallback por si viene null */}
+                    <td className="price-cell">
+                      S/. {(booking.totalPrice ?? 0).toFixed(2)}
+                    </td>
                     <td>
                       <span className={`payment-badge ${booking.paid ? 'paid' : 'pending'}`}>
                         {booking.paid ? '✓ Pagado' : '⏳ Pendiente'}
                       </span>
                     </td>
                     <td>
-                      <span className="status-badge confirmed">Confirmado</span>
-                    </td>
-                    <td>
-                      <button className="action-btn-small" onClick={() => navigate(`/admin/bookings/${booking.id}`)}>
+                      <button
+                        className="action-btn-small"
+                        onClick={() => navigate(`/admin/bookings/${booking.id}`)}
+                      >
                         Ver
                       </button>
                     </td>
@@ -142,8 +178,8 @@ const AdminDashboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="empty-state">
-                    No hay reservas registradas para el día de hoy
+                  <td colSpan="6" className="empty-state">
+                    No hay reservas registradas para hoy
                   </td>
                 </tr>
               )}
@@ -152,57 +188,56 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Estadísticas Reales extraídas de la Base de Datos */}
-      <div className="admin-grid">
-        {/* Gráfico Semanal Dinámico */}
-        <div className="admin-card">
-          <h3>Ingresos Semanales</h3>
-          <div className="chart-placeholder">
-            <div className="bar-chart">
-              {dashboard?.weeklyIncome?.map((item) => (
-                <div key={item.day} className="bar-item">
-                  <div
-                    className="bar"
-                    style={{
-                      height: `${item.percentage}%`,
-                    }}
-                    title={`S/. ${item.amount.toFixed(2)}`}
-                  ></div>
-                  <span>{item.day}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Ranking de Canchas Dinámico */}
-        <div className="admin-card">
-          <h3>Canchas Más Reservadas</h3>
-          <div className="ranking-list">
-            {dashboard?.mostReservedFields?.map((field) => (
-              <div key={field.rank} className="ranking-item">
-                <span className="rank">{field.rank}.</span>
-                <span className="name">{field.name}</span>
-                <span className="count">{field.count} reservas</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Historial de Auditoría / Actividad Reciente */}
+      {/* Reservas recientes — viene de dashboard.recentBookings (últimas 5) */}
       <div className="admin-section">
-        <h3>Actividad Reciente</h3>
-        <div className="activity-list">
-          {dashboard?.recentActivities?.map((activity) => (
-            <div key={activity.id} className="activity-item">
-              <div className="activity-icon">{activity.icon}</div>
-              <div className="activity-content">
-                <p className="activity-text" dangerouslySetInnerHTML={{ __html: activity.text }}></p>
-                <span className="activity-time">{activity.time}</span>
-              </div>
-            </div>
-          ))}
+        <div className="admin-section-header">
+          <h2>Últimas 5 Reservas</h2>
+          <button
+            className="admin-section-link"
+            onClick={() => navigate('/admin/bookings')}
+          >
+            Ver todas →
+          </button>
+        </div>
+        <div className="bookings-table-wrapper">
+          <table className="bookings-table">
+            <thead>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Cancha</th>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboard?.recentBookings?.length > 0 ? (
+                dashboard.recentBookings.map((booking) => (
+                  <tr key={booking.id}>
+                    <td className="time-cell">
+                      {formatDateTime(booking.startDateTime)}
+                    </td>
+                    <td>{booking.fieldName}</td>
+                    <td>{booking.customerName}</td>
+                    <td className="price-cell">
+                      S/. {(booking.totalPrice ?? 0).toFixed(2)}
+                    </td>
+                    <td>
+                      <span className={`payment-badge ${booking.paid ? 'paid' : 'pending'}`}>
+                        {booking.paid ? '✓ Pagado' : '⏳ Pendiente'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="empty-state">
+                    Sin reservas recientes
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
