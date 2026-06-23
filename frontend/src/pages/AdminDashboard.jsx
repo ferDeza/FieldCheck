@@ -159,7 +159,7 @@ const AdminDashboard = () => {
                     <td>{booking.customerName}</td>
                     {/* totalPrice real — con fallback por si viene null */}
                     <td className="price-cell">
-                      S/. {(booking.totalPrice ?? 0).toFixed(2)}
+                      S/. {(booking.price ?? 0).toFixed(2)}
                     </td>
                     <td>
                       <span className={`payment-badge ${booking.paid ? 'paid' : 'pending'}`}>
@@ -220,7 +220,7 @@ const AdminDashboard = () => {
                     <td>{booking.fieldName}</td>
                     <td>{booking.customerName}</td>
                     <td className="price-cell">
-                      S/. {(booking.totalPrice ?? 0).toFixed(2)}
+                      S/. {(booking.price?? 0).toFixed(2)}
                     </td>
                     <td>
                       <span className={`payment-badge ${booking.paid ? 'paid' : 'pending'}`}>
