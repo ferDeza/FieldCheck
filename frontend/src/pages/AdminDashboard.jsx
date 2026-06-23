@@ -111,21 +111,6 @@ const AdminDashboard = () => {
         />
       </div>
 
-      {/* Resumen del día — calculado desde getBookingsForToday */}
-      <div className="admin-today-summary">
-        <div className="today-stat">
-          <span className="today-stat-value">{bookingsToday.length}</span>
-          <span className="today-stat-label">Reservas hoy</span>
-        </div>
-        <div className="today-stat green">
-          <span className="today-stat-value">S/. {paidTotal}</span>
-          <span className="today-stat-label">{paidBookings.length} pagos confirmados</span>
-        </div>
-        <div className="today-stat amber">
-          <span className="today-stat-value">S/. {pendingTotal}</span>
-          <span className="today-stat-label">{pendingBookings.length} pagos pendientes</span>
-        </div>
-      </div>
 
       {/* Tabla de reservas de hoy — campos reales de BookingWebDTO */}
       <div className="admin-section">
