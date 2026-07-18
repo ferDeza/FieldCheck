@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import Bookings from './pages/Bookings';
 import SportFields from './pages/SportFields';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminFields from './pages/AdminFields';
+import AdminUsers from './pages/AdminUsers';
 import Payment from './pages/Payment';
 
 
@@ -32,6 +34,15 @@ function App() {
               } />
               <Route path="/admin-dashboard" element={
                 <ProtectedRoute><AdminDashboard /></ProtectedRoute>
+              } />
+              <Route path="/admin/fields" element={
+                <ProtectedRoute><AdminFields /></ProtectedRoute>
+              } />
+              <Route path="/admin/fields/new" element={
+                <ProtectedRoute><AdminFields /></ProtectedRoute>
+              } />
+              <Route path="/admin/users" element={
+                <ProtectedRoute><AdminUsers /></ProtectedRoute>
               } />
               <Route path="/bookings" element={
                 <ProtectedRoute><Bookings /></ProtectedRoute>

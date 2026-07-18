@@ -226,6 +226,19 @@ export const adminService = {
     return await response.json();
   },
 
+  getUsers: async () => {
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch users');
+    }
+
+    return await response.json();
+  },
+
   createSportField: async (fieldData) => {
     const response = await fetch(`${API_BASE_URL}/fields`, {
       method: 'POST',
