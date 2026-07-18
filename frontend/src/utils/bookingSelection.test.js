@@ -27,6 +27,32 @@ describe('buildContinuousBookingSelection', () => {
     expect(result.endTime).toBe(11);
   });
 
+  it('acepta la selección del horario inmediato anterior en el mismo día', () => {
+    const result = buildContinuousBookingSelection({
+      selectedTimes: ['MON-9'],
+      clickedTimeKey: 'MON-8',
+      selectedDayCode: 'MON',
+    });
+
+    expect(result.error).toBe('');
+    expect(result.nextSelectedTimes).toEqual(['MON-8', 'MON-9']);
+    expect(result.startTime).toBe(8);
+    expect(result.endTime).toBe(10);
+  });
+
+  it('reinicia la selección si se intenta saltar una hora dentro del mismo día', () => {
+    const result = buildContinuousBookingSelection({
+      selectedTimes: ['MON-8', 'MON-9'],
+      clickedTimeKey: 'MON-11',
+      selectedDayCode: 'MON',
+    });
+
+    expect(result.error).toContain('nueva selección');
+    expect(result.nextSelectedTimes).toEqual(['MON-11']);
+    expect(result.startTime).toBe(11);
+    expect(result.endTime).toBe(12);
+  });
+
   it('reinicia la selección cuando cambia de día', () => {
     const result = buildContinuousBookingSelection({
       selectedTimes: ['MON-8'],
