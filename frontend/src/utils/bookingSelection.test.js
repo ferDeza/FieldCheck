@@ -53,6 +53,19 @@ describe('buildContinuousBookingSelection', () => {
     expect(result.endTime).toBe(12);
   });
 
+  it('reinicia la selección cuando la selección actual ya tiene huecos internos', () => {
+    const result = buildContinuousBookingSelection({
+      selectedTimes: ['MON-7', 'MON-9'],
+      clickedTimeKey: 'MON-8',
+      selectedDayCode: 'MON',
+    });
+
+    expect(result.error).toContain('nueva selección');
+    expect(result.nextSelectedTimes).toEqual(['MON-8']);
+    expect(result.startTime).toBe(8);
+    expect(result.endTime).toBe(9);
+  });
+
   it('reinicia la selección cuando cambia de día', () => {
     const result = buildContinuousBookingSelection({
       selectedTimes: ['MON-8'],

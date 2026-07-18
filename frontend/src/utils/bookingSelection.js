@@ -50,9 +50,27 @@ export const buildContinuousBookingSelection = ({
     };
   }
 
-  const hours = selectedTimes.map(getHour);
-  const minHour = Math.min(...hours);
-  const maxHour = Math.max(...hours);
+  const parsedSelected = sortTimeKeys(selectedTimes).map((timeKey) => ({
+    timeKey,
+    hour: getHour(timeKey),
+  }));
+
+  const hasGap = parsedSelected.some((item, index) => {
+    if (index === 0) return false;
+    return item.hour !== parsedSelected[index - 1].hour + 1;
+  });
+
+  if (hasGap) {
+    return {
+      nextSelectedTimes: [clickedTimeKey],
+      startTime: getHour(clickedTimeKey),
+      endTime: getHour(clickedTimeKey) + 1,
+      error: 'La selección anterior no era continua y se inició una nueva selección con la hora escogida.',
+    };
+  }
+
+  const minHour = parsedSelected[0].hour;
+  const maxHour = parsedSelected[parsedSelected.length - 1].hour;
   const clickedHour = getHour(clickedTimeKey);
 
   const canExtendLeft = clickedHour === minHour - 1;
