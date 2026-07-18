@@ -41,7 +41,13 @@ function App() {
               <Route path="/admin/fields/new" element={
                 <ProtectedRoute><AdminFields /></ProtectedRoute>
               } />
+              <Route path="/admin/fields/*" element={
+                <ProtectedRoute><AdminFields /></ProtectedRoute>
+              } />
               <Route path="/admin/users" element={
+                <ProtectedRoute><AdminUsers /></ProtectedRoute>
+              } />
+              <Route path="/admin/users/*" element={
                 <ProtectedRoute><AdminUsers /></ProtectedRoute>
               } />
               <Route path="/bookings" element={
