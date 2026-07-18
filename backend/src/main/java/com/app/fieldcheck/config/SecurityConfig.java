@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -46,6 +47,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests.
                                 requestMatchers("/api/v1/auth/**","/login", "/css/**", "/js/**").permitAll().
+                                requestMatchers("/api/admin/**").hasRole("ADMIN").
+                                requestMatchers(HttpMethod.POST, "/api/fields").hasRole("ADMIN").
                                 requestMatchers("/api/v1/booking/**").authenticated().
                                 requestMatchers("/view/bookings/delete/**").hasRole("ADMIN").
                                 requestMatchers("/view/bookings/new","/view/bookings/save").authenticated().anyRequest()
@@ -70,11 +73,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "http://localhost:5173",          // El puerto por defecto si usas Vite de forma local
-                "https://*.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

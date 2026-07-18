@@ -6,11 +6,13 @@ import com.app.fieldcheck.repositories.SportFieldRepository;
 import com.app.fieldcheck.repositories.UserRepository;
 import com.app.fieldcheck.web.dtos.AdminDashboardDTO;
 import com.app.fieldcheck.web.dtos.BookingWebDTO;
+import com.app.fieldcheck.web.dtos.RevenueHistoryDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,22 @@ public class AdminService {
                 })
                 .map(this::convertToBookingWebDTO)
                 .collect(Collectors.toList());
+    }
+
+    public List<RevenueHistoryDTO> getRevenueHistory() {
+        List<RevenueHistoryDTO> history = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            double revenue = bookingRepository.findAll().stream()
+                    .filter(booking -> booking.getStartDateTime().toLocalDate().equals(date))
+                    .mapToDouble(Booking::getTotalPrice)
+                    .sum();
+            history.add(new RevenueHistoryDTO(date.toString(), revenue));
+        }
+
+        return history;
     }
 
     private BookingWebDTO convertToBookingWebDTO(Booking booking) {

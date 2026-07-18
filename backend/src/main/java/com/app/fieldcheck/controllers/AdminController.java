@@ -3,6 +3,7 @@ package com.app.fieldcheck.controllers;
 import com.app.fieldcheck.services.AdminService;
 import com.app.fieldcheck.web.dtos.AdminDashboardDTO;
 import com.app.fieldcheck.web.dtos.BookingWebDTO;
+import com.app.fieldcheck.web.dtos.RevenueHistoryDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -21,5 +22,10 @@ public class AdminController {
     @GetMapping("/bookings-today")
     public List<BookingWebDTO> getBookingsForToday() {
         return adminService.getBookingsForToday();
+    }
+
+    @GetMapping("/revenue-history")
+    public List<RevenueHistoryDTO> getRevenueHistory() {
+        return adminService.getRevenueHistory();
     }
 }

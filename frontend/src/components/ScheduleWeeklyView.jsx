@@ -1,41 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/ScheduleWeeklyView.css';
-
-// Al sacar estas constantes fuera del componente, evitamos que cambien su referencia en cada renderizado
-const DAY_MAP = { 
-  'MONDAY': 'MON', 'TUESDAY': 'TUE', 'WEDNESDAY': 'WED', 
-  'THURSDAY': 'THU', 'FRIDAY': 'FRI', 'SATURDAY': 'SAT', 'SUNDAY': 'SUN' 
-};
-const DAYS_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-const HOURS = Array.from({ length: 16 }, (_, i) => i + 7); // 07:00 to 22:00
-const DAYS_KEYS = Object.values(DAY_MAP).slice(0, 7);
 
 const ScheduleWeeklyView = ({ fieldId, schedules: propsSchedules, onTimeSelect, selectedTimes = [] }) => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Envolvemos con useCallback para que mantenga una referencia estable
-  const generateMockSchedules = useCallback(() => {
-    const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-    const mock = [];
-    days.forEach((day) => {
-      HOURS.forEach((hour) => {
-        const isAvailable = Math.random() > 0.3;
-        mock.push({
-          dayOfWeek: day,
-          hour: hour,
-          isAvailable: isAvailable,
-        });
-      });
-    });
-    return mock;
-  }, []);
+  const dayMap = { 'MONDAY': 'MON', 'TUESDAY': 'TUE', 'WEDNESDAY': 'WED', 'THURSDAY': 'THU', 'FRIDAY': 'FRI', 'SATURDAY': 'SAT', 'SUNDAY': 'SUN' };
+  const daysNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const hours = Array.from({ length: 16 }, (_, i) => i + 7); // 07:00 to 22:00
 
   useEffect(() => {
     if (propsSchedules && propsSchedules.length > 0) {
       // Use schedules from props (from API)
       const processedSchedules = propsSchedules.map((schedule) => ({
-        dayOfWeek: DAY_MAP[schedule.dayOfWeek] || schedule.dayOfWeek,
+        dayOfWeek: dayMap[schedule.dayOfWeek] || schedule.dayOfWeek,
         startTime: schedule.startTime,
         endTime: schedule.endTime,
         isAvailable: schedule.isAvailable,
@@ -48,9 +26,26 @@ const ScheduleWeeklyView = ({ fieldId, schedules: propsSchedules, onTimeSelect, 
       setSchedules(mockSchedules);
     }
     setLoading(false);
-  }, [fieldId, propsSchedules, generateMockSchedules]); // Ahora todas las dependencias son estables
+  }, [fieldId, propsSchedules]);
+
+  const generateMockSchedules = () => {
+    const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const mock = [];
+    days.forEach((day) => {
+      hours.forEach((hour) => {
+        const isAvailable = Math.random() > 0.3;
+        mock.push({
+          dayOfWeek: day,
+          hour: hour,
+          isAvailable: isAvailable,
+        });
+      });
+    });
+    return mock;
+  };
 
   const handleTimeClick = (day, hour) => {
+    const timeKey = `${day}-${hour}`;
     const schedule = schedules.find(s => s.dayOfWeek === day && s.hour === hour);
 
     if (schedule && schedule.isAvailable) {
@@ -74,6 +69,8 @@ const ScheduleWeeklyView = ({ fieldId, schedules: propsSchedules, onTimeSelect, 
     return <div className="schedule-loading">Cargando horarios...</div>;
   }
 
+  const days = Object.values(dayMap).slice(0, 7);
+
   return (
     <div className="schedule-weekly-view">
       <h3>Disponibilidad Semanal</h3>
@@ -82,16 +79,16 @@ const ScheduleWeeklyView = ({ fieldId, schedules: propsSchedules, onTimeSelect, 
           <thead>
             <tr>
               <th>Hora</th>
-              {DAYS_NAMES.map((day, idx) => (
+              {daysNames.map((day, idx) => (
                 <th key={idx}>{day}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {HOURS.map((hour) => (
+            {hours.map((hour) => (
               <tr key={hour}>
                 <td className="hour-cell">{String(hour).padStart(2, '0')}:00</td>
-                {DAYS_KEYS.map((day) => (
+                {days.map((day) => (
                   <td
                     key={`${day}-${hour}`}
                     className={`time-cell ${getStatusClass(day, hour)}`}

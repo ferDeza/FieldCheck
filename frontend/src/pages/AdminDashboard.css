@@ -282,6 +282,88 @@
   font-size: 12px;
 }
 
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  color: #2d5016;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  border: 1px solid #d9e7cf;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.admin-submit-btn {
+  align-self: flex-start;
+  background: #4a7c24;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.admin-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-section-count {
+  color: #4a7c24;
+  font-weight: 700;
+}
+
+.revenue-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.revenue-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7fbf1;
+  border: 1px solid #e3f0d3;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.admin-section-link {
+  border: none;
+  background: none;
+  color: #4a7c24;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .admin-loading,
 .admin-error {
   text-align: center;
@@ -320,5 +402,9 @@
   .bookings-table th,
   .bookings-table td {
     padding: 8px;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
   }
 }

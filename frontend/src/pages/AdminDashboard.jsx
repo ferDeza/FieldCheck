@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminService } from '../services/api';
+import { adminService, sportFieldService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import KPICard from '../components/KPICard';
 import './AdminDashboard.css';
@@ -11,8 +11,19 @@ const AdminDashboard = () => {
 
   const [dashboard, setDashboard] = useState(null);
   const [bookingsToday, setBookingsToday] = useState([]);
+  const [revenueHistory, setRevenueHistory] = useState([]);
+  const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showCreateField, setShowCreateField] = useState(false);
+  const [fieldForm, setFieldForm] = useState({
+    name: '',
+    type: 'Fútbol 5',
+    basePrice: '',
+    district: 'Cayma',
+    description: '',
+  });
+  const [fieldSubmitting, setFieldSubmitting] = useState(false);
 
   useEffect(() => {
     // Fix: si authLoading es true, espera — no ejecutes nada todavía
@@ -26,12 +37,16 @@ const AdminDashboard = () => {
 
     const fetchData = async () => {
       try {
-        const [dashData, todayBookings] = await Promise.all([
+        const [dashData, todayBookings, fieldsData, revenueData] = await Promise.all([
           adminService.getDashboard(),
           adminService.getBookingsForToday(),
+          sportFieldService.getAllSportFields(),
+          adminService.getRevenueHistory(),
         ]);
         setDashboard(dashData);
         setBookingsToday(todayBookings);
+        setFields(fieldsData);
+        setRevenueHistory(revenueData);
       } catch (err) {
         setError(err.message || 'Error al cargar el panel de administración');
       } finally {
@@ -55,12 +70,37 @@ const AdminDashboard = () => {
   }
 
   // Calculados desde bookingsToday (BookingWebDTO real)
-  const paidBookings    = bookingsToday.filter(b => b.paid);
-  const pendingBookings = bookingsToday.filter(b => !b.paid);
-  const paidTotal       = paidBookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0).toFixed(2);
-  const pendingTotal    = pendingBookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0).toFixed(2);
+  const totalRevenue    = (dashboard?.totalRevenue ?? 0).toFixed(2);
+  const totalFields     = fields.length;
 
   // Formatea "2025-06-22T08:00:00" → "08:00 – 09:00"
+  const handleCreateField = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!fieldForm.name || !fieldForm.basePrice) {
+      setError('Completa el nombre y el precio base para crear la cancha.');
+      return;
+    }
+
+    setFieldSubmitting(true);
+    try {
+      const payload = {
+        ...fieldForm,
+        basePrice: Number(fieldForm.basePrice),
+      };
+
+      const createdField = await adminService.createSportField(payload);
+      setFields((prev) => [createdField, ...prev]);
+      setFieldForm({ name: '', type: 'Fútbol 5', basePrice: '', district: 'Cayma', description: '' });
+      setShowCreateField(false);
+    } catch (err) {
+      setError(err.message || 'No se pudo crear la cancha');
+    } finally {
+      setFieldSubmitting(false);
+    }
+  };
+
   const formatRange = (start, end) => {
     const fmt = (dt) =>
       new Date(dt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
@@ -93,7 +133,7 @@ const AdminDashboard = () => {
         />
         <KPICard
           title="Ingresos Totales"
-          value={`S/. ${(dashboard?.totalRevenue ?? 0).toFixed(2)}`}
+          value={`S/. ${totalRevenue}`}
           subtitle="Acumulado"
           icon="💰"
         />
@@ -105,12 +145,69 @@ const AdminDashboard = () => {
         />
         <KPICard
           title="Canchas Activas"
-          value={dashboard?.activeSportFields ?? 0}
+          value={totalFields}
           subtitle="Todas operativas"
           icon="⚽"
         />
       </div>
 
+      <div className="admin-section">
+        <div className="admin-section-header">
+          <h2>Ingresos de los últimos 7 días</h2>
+        </div>
+        <div className="revenue-history-list">
+          {revenueHistory.length > 0 ? revenueHistory.map((item) => (
+            <div key={item.label} className="revenue-history-item">
+              <span>{new Date(item.label).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}</span>
+              <strong>S/. {Number(item.revenue || 0).toFixed(2)}</strong>
+            </div>
+          )) : <p className="empty-state">Sin historial disponible</p>}
+        </div>
+      </div>
+
+      <div className="admin-section">
+        <div className="admin-section-header">
+          <h2>Gestión de canchas</h2>
+          <button className="admin-section-link" onClick={() => setShowCreateField((prev) => !prev)}>
+            {showCreateField ? 'Cerrar' : '+ Agregar cancha'}
+          </button>
+        </div>
+
+        {showCreateField && (
+          <form className="admin-form" onSubmit={handleCreateField}>
+            <div className="admin-form-grid">
+              <label>
+                Nombre
+                <input value={fieldForm.name} onChange={(e) => setFieldForm({ ...fieldForm, name: e.target.value })} required />
+              </label>
+              <label>
+                Tipo
+                <select value={fieldForm.type} onChange={(e) => setFieldForm({ ...fieldForm, type: e.target.value })}>
+                  <option value="Fútbol 5">Fútbol 5</option>
+                  <option value="Fútbol 7">Fútbol 7</option>
+                  <option value="Fútbol 11">Fútbol 11</option>
+                  <option value="Vóley">Vóley</option>
+                </select>
+              </label>
+              <label>
+                Precio base / hora
+                <input type="number" min="0" step="0.01" value={fieldForm.basePrice} onChange={(e) => setFieldForm({ ...fieldForm, basePrice: e.target.value })} required />
+              </label>
+              <label>
+                Distrito
+                <input value={fieldForm.district} onChange={(e) => setFieldForm({ ...fieldForm, district: e.target.value })} required />
+              </label>
+            </div>
+            <label>
+              Descripción
+              <textarea value={fieldForm.description} onChange={(e) => setFieldForm({ ...fieldForm, description: e.target.value })} rows="3" />
+            </label>
+            <button type="submit" className="admin-submit-btn" disabled={fieldSubmitting}>
+              {fieldSubmitting ? 'Guardando...' : 'Crear cancha'}
+            </button>
+          </form>
+        )}
+      </div>
 
       {/* Tabla de reservas de hoy — campos reales de BookingWebDTO */}
       <div className="admin-section">

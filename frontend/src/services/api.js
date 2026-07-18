@@ -212,6 +212,34 @@ export const adminService = {
 
     return await response.json();
   },
+
+  getRevenueHistory: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/revenue-history`, {
+      method: 'GET',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch revenue history');
+    }
+
+    return await response.json();
+  },
+
+  createSportField: async (fieldData) => {
+    const response = await fetch(`${API_BASE_URL}/fields`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(fieldData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create sport field');
+    }
+
+    return await response.json();
+  },
 };
 
 /**
