@@ -32,12 +32,12 @@ public class BookingService {
         return bookingRepository.findAll().stream()
                 .map(booking -> new BookingWebDTO(
                    booking.getId(),
-                   booking.getUser().getFullName(),
-                   booking.getSportField().getName(),
+                   booking.getUser() != null ? booking.getUser().getFullName() : "Cliente no disponible",
+                   booking.getSportField() != null ? booking.getSportField().getName() : "Cancha no disponible",
                    booking.getStartDateTime(),
                    booking.getEndDateTime(),
-                   booking.getTotalPrice()
-                         ,booking.getPaid()
+                   booking.getTotalPrice(),
+                   booking.getPaid()
                 )).toList();
     }
 
@@ -94,8 +94,8 @@ public class BookingService {
                 .stream()
                 .map(booking -> new BookingWebDTO(
                         booking.getId(),
-                        booking.getUser().getFullName(),
-                        booking.getSportField().getName(),
+                        booking.getUser() != null ? booking.getUser().getFullName() : "Cliente no disponible",
+                        booking.getSportField() != null ? booking.getSportField().getName() : "Cancha no disponible",
                         booking.getStartDateTime(),
                         booking.getEndDateTime(),
                         booking.getTotalPrice(),

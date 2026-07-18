@@ -11,13 +11,10 @@ import SportFields from './pages/SportFields';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminFields from './pages/AdminFields';
 import AdminUsers from './pages/AdminUsers';
+import AdminBookings from './pages/AdminBookings';
 import Payment from './pages/Payment';
 
-
 function App() {
-  // --- AQUÍ PEGA LA LÓGICA QUE TENÍAS EN EL JSX ---
-  // Ejemplo: const [user, setUser] = useState(null); 
-  
   return (
     <AuthProvider>
       <Router>
@@ -35,20 +32,14 @@ function App() {
               <Route path="/admin-dashboard" element={
                 <ProtectedRoute><AdminDashboard /></ProtectedRoute>
               } />
-              <Route path="/admin/fields" element={
-                <ProtectedRoute><AdminFields /></ProtectedRoute>
-              } />
-              <Route path="/admin/fields/new" element={
-                <ProtectedRoute><AdminFields /></ProtectedRoute>
-              } />
               <Route path="/admin/fields/*" element={
                 <ProtectedRoute><AdminFields /></ProtectedRoute>
               } />
-              <Route path="/admin/users" element={
-                <ProtectedRoute><AdminUsers /></ProtectedRoute>
-              } />
               <Route path="/admin/users/*" element={
                 <ProtectedRoute><AdminUsers /></ProtectedRoute>
+              } />
+              <Route path="/admin/bookings/*" element={
+                <ProtectedRoute><AdminBookings /></ProtectedRoute>
               } />
               <Route path="/bookings" element={
                 <ProtectedRoute><Bookings /></ProtectedRoute>
@@ -59,8 +50,8 @@ function App() {
               <Route path="/sport-fields" element={
                 <ProtectedRoute><SportFields /></ProtectedRoute>
               } />
-              
               <Route path="/" element={<Navigate to="/dashboard" />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>

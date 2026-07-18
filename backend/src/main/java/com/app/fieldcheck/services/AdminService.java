@@ -52,11 +52,11 @@ public class AdminService {
     public List<BookingWebDTO> getBookingsForToday() {
         LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
         LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
-        
+
         return bookingRepository.findAll().stream()
                 .filter(booking -> {
                     LocalDateTime start = booking.getStartDateTime();
-                    return start.isAfter(startOfDay) && start.isBefore(endOfDay);
+                    return start != null && start.isAfter(startOfDay) && start.isBefore(endOfDay);
                 })
                 .map(this::convertToBookingWebDTO)
                 .collect(Collectors.toList());
@@ -81,8 +81,8 @@ public class AdminService {
     private BookingWebDTO convertToBookingWebDTO(Booking booking) {
         return new BookingWebDTO(
                 booking.getId(),
-                booking.getUser().getFullName(),
-                booking.getSportField().getName(),
+                booking.getUser() != null ? booking.getUser().getFullName() : "Cliente no disponible",
+                booking.getSportField() != null ? booking.getSportField().getName() : "Cancha no disponible",
                 booking.getStartDateTime(),
                 booking.getEndDateTime(),
                 booking.getTotalPrice(),

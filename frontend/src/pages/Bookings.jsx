@@ -120,6 +120,10 @@ const handleDateChange = (e) => {
     const timeKey = `${timeData.day}-${timeData.hour}`;
     const selectedDayCode = selectedTimes.length > 0 ? selectedTimes[0].split('-')[0] : null;
 
+    console.log('--- CLICK ---');
+    console.log('timeKey:', timeKey);
+    console.log('selectedTimes ANTES:', selectedTimes);
+
     const selection = buildContinuousBookingSelection({
       selectedTimes,
       clickedTimeKey: timeKey,
