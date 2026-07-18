@@ -12,31 +12,37 @@ export const buildContinuousBookingSelection = ({
     };
   }
 
-  const [clickedDay, clickedHour] = clickedTimeKey.split('-');
-  const clickedHourNumber = Number(clickedHour);
+  const [clickedDay] = clickedTimeKey.split('-');
 
-  if (selectedDayCode && clickedDay !== selectedDayCode) {
+  if (selectedTimes.includes(clickedTimeKey)) {
+    const nextSelectedTimes = selectedTimes.filter((time) => time !== clickedTimeKey);
     return {
-      nextSelectedTimes: selectedTimes,
-      startTime: '',
-      endTime: '',
-      error: 'No puedes combinar horarios de distintos días en un mismo booking.',
-    };
-  }
-
-  const currentSelection = selectedTimes.includes(clickedTimeKey)
-    ? selectedTimes.filter((time) => time !== clickedTimeKey)
-    : [...selectedTimes, clickedTimeKey];
-
-  if (currentSelection.length <= 1) {
-    return {
-      nextSelectedTimes: currentSelection,
-      startTime: currentSelection[0] ? Number(currentSelection[0].split('-')[1]) : '',
-      endTime: currentSelection[0] ? Number(currentSelection[0].split('-')[1]) + 1 : '',
+      nextSelectedTimes,
+      startTime: nextSelectedTimes[0] ? Number(nextSelectedTimes[0].split('-')[1]) : '',
+      endTime: nextSelectedTimes[0] ? Number(nextSelectedTimes[0].split('-')[1]) + 1 : '',
       error: '',
     };
   }
 
+  if (selectedDayCode && clickedDay !== selectedDayCode) {
+    return {
+      nextSelectedTimes: [clickedTimeKey],
+      startTime: Number(clickedTimeKey.split('-')[1]),
+      endTime: Number(clickedTimeKey.split('-')[1]) + 1,
+      error: 'Has cambiado de día, se ha iniciado una nueva selección para el día seleccionado.',
+    };
+  }
+
+  if (selectedTimes.length === 0) {
+    return {
+      nextSelectedTimes: [clickedTimeKey],
+      startTime: Number(clickedTimeKey.split('-')[1]),
+      endTime: Number(clickedTimeKey.split('-')[1]) + 1,
+      error: '',
+    };
+  }
+
+  const currentSelection = [...selectedTimes, clickedTimeKey];
   const hours = currentSelection
     .map((time) => Number(time.split('-')[1]))
     .sort((a, b) => a - b);
@@ -48,10 +54,10 @@ export const buildContinuousBookingSelection = ({
 
   if (!isConsecutive) {
     return {
-      nextSelectedTimes: selectedTimes,
-      startTime: '',
-      endTime: '',
-      error: 'Solo puedes seleccionar horas consecutivas en un mismo booking. Si hay una hora de separación o un cambio de día, debes crear otro booking.',
+      nextSelectedTimes: [clickedTimeKey],
+      startTime: Number(clickedTimeKey.split('-')[1]),
+      endTime: Number(clickedTimeKey.split('-')[1]) + 1,
+      error: 'Solo puedes seleccionar horas consecutivas en un mismo booking. Se inició una nueva selección con la hora escogida.',
     };
   }
 

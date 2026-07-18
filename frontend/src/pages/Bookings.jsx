@@ -126,12 +126,7 @@ const handleDateChange = (e) => {
       selectedDayCode,
     });
 
-    if (selection.error) {
-      setSelectionError(selection.error);
-      return;
-    }
-
-    setSelectionError('');
+    setSelectionError(selection.error || '');
     setSelectedTimes(selection.nextSelectedTimes);
 
     if (selection.nextSelectedTimes.length > 0) {
