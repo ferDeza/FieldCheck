@@ -1,0 +1,311 @@
+.pricing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: inherit;
+}
+
+/* Header & Intro Section */
+.pricing-hero {
+  text-align: center;
+  margin-bottom: 50px;
+  background: linear-gradient(135deg, rgba(45, 80, 22, 0.05) 0%, rgba(74, 124, 36, 0.05) 100%);
+  padding: 50px 30px;
+  border-radius: 15px;
+  border: 1px solid rgba(45, 80, 22, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.pricing-hero h1 {
+  font-size: 2.8rem;
+  color: #2d5016;
+  margin-bottom: 20px;
+  font-weight: 800;
+}
+
+.pricing-about-text {
+  font-size: 1.15rem;
+  color: #444;
+  max-width: 850px;
+  margin: 0 auto 20px auto;
+  line-height: 1.7;
+}
+
+.pricing-about-text p {
+  margin-bottom: 15px;
+}
+
+.pricing-about-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Main Subscriptions Section */
+.pricing-section-title {
+  text-align: center;
+  font-size: 2rem;
+  color: #2d5016;
+  margin: 40px 0 25px 0;
+  position: relative;
+  font-weight: 700;
+}
+
+.pricing-section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #2d5016, #4a7c24);
+  margin: 10px auto 0 auto;
+  border-radius: 2px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  margin-bottom: 50px;
+}
+
+/* Cards Design */
+.pricing-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eef2eb;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border-top: 5px solid #2d5016;
+}
+
+.pricing-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(45, 80, 22, 0.15);
+}
+
+/* Featured / Popular Card Styling */
+.pricing-card.popular {
+  border-top-color: #4a7c24;
+  border-width: 2px;
+  background: linear-gradient(to bottom, #ffffff, #fcfdfe);
+  box-shadow: 0 8px 25px rgba(45, 80, 22, 0.1);
+}
+
+.pricing-card.popular::before {
+  content: 'RECOMENDADO';
+  position: absolute;
+  top: 15px;
+  right: -35px;
+  background: #4a7c24;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 4px 35px;
+  transform: rotate(45deg);
+  letter-spacing: 1px;
+}
+
+.card-header {
+  margin-bottom: 25px;
+}
+
+.card-header h3 {
+  font-size: 1.6rem;
+  color: #333;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.card-target {
+  font-size: 0.95rem;
+  color: #666;
+  font-style: italic;
+}
+
+.card-price-container {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #edf2e9;
+}
+
+.card-price {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #2d5016;
+}
+
+.card-period {
+  font-size: 0.95rem;
+  color: #666;
+  margin-left: 4px;
+}
+
+.card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 35px 0;
+  flex-grow: 1;
+}
+
+.card-features li {
+  padding: 10px 0 10px 28px;
+  position: relative;
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.card-features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  color: #4a7c24;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.pricing-action-btn {
+  display: block;
+  text-align: center;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #2d5016 0%, #4a7c24 100%);
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.pricing-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(45, 80, 22, 0.3);
+  opacity: 0.95;
+}
+
+/* Secondary Cards Row (Reserva Destacada & Acceso Jugador) */
+.secondary-pricing-section {
+  background-color: #f7f9f5;
+  padding: 40px 30px;
+  border-radius: 12px;
+  margin-bottom: 55px;
+  border: 1px solid #e8ede4;
+}
+
+.secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+.pricing-card.secondary-card {
+  border-top-color: #7ba25c;
+  padding: 30px;
+  background: white;
+}
+
+/* Player Call to Action Section */
+.pricing-cta-section {
+  text-align: center;
+  background: linear-gradient(135deg, #2d5016 0%, #3a6b3c 100%);
+  color: white;
+  padding: 55px 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(45, 80, 22, 0.25);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-cta-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.pricing-cta-section h2 {
+  font-size: 2.2rem;
+  margin: 0 0 15px 0;
+  font-weight: 700;
+}
+
+.pricing-cta-section p {
+  font-size: 1.15rem;
+  max-width: 600px;
+  margin: 0 auto 30px auto;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.cta-btn {
+  display: inline-block;
+  background-color: white;
+  color: #2d5016;
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 15px 40px;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  background-color: #f4f7f2;
+}
+
+/* Responsiveness adjustments */
+@media (max-width: 768px) {
+  .pricing-hero {
+    padding: 35px 20px;
+    margin-bottom: 35px;
+  }
+
+  .pricing-hero h1 {
+    font-size: 2.1rem;
+  }
+
+  .pricing-about-text {
+    font-size: 1rem;
+  }
+
+  .pricing-section-title {
+    font-size: 1.6rem;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .secondary-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .pricing-cta-section {
+    padding: 40px 20px;
+  }
+
+  .pricing-cta-section h2 {
+    font-size: 1.8rem;
+  }
+
+  .cta-btn {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 20px;
+  }
+}

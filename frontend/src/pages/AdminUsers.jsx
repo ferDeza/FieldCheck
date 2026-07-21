@@ -27,7 +27,9 @@ const AdminUsers = () => {
 
     try {
       const data = await adminService.getUsers();
-      setUsers(data);
+      // Filtrar para mostrar únicamente clientes (excluir ADMINs)
+      const customersOnly = data.filter((u) => u.role !== 'ADMIN');
+      setUsers(customersOnly);
     } catch (err) {
       setError(err.message || 'Error al cargar usuarios');
     } finally {
@@ -60,7 +62,6 @@ const AdminUsers = () => {
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Teléfono</th>
-                <th>Rol</th>
               </tr>
             </thead>
             <tbody>
@@ -70,12 +71,11 @@ const AdminUsers = () => {
                     <td>{userItem.fullName}</td>
                     <td>{userItem.email}</td>
                     <td>{userItem.phoneNumber ?? 'No registrado'}</td>
-                    <td>{userItem.role}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="empty-state">
+                  <td colSpan="3" className="empty-state">
                     No hay usuarios registrados.
                   </td>
                 </tr>

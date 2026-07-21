@@ -66,6 +66,11 @@ const Navigation = () => {
         ) : (
           <ul className="nav-menu">
             <li className="nav-item">
+              <NavLink to="/pricing" className={getNavLinkClass}>
+                Planes
+              </NavLink>
+            </li>
+            <li className="nav-item">
               <NavLink to="/login" className={getNavLinkClass}>
                 Login
               </NavLink>

@@ -1,4 +1,10 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
+const normalizeApiBaseUrl = (url) => {
+  if (!url) return '';
+  const trimmed = url.trim().replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(process.env.REACT_APP_API_URL) || `${window.location.origin}/api`;
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');

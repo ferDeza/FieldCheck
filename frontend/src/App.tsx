@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navigation from './components/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -13,6 +13,12 @@ import AdminFields from './pages/AdminFields';
 import AdminUsers from './pages/AdminUsers';
 import AdminBookings from './pages/AdminBookings';
 import Payment from './pages/Payment';
+import Pricing from './pages/Pricing';
+
+const HomeRedirect = () => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/pricing" replace />;
+};
 
 function App() {
   return (
@@ -25,6 +31,7 @@ function App() {
               {/* Tus rutas que ya tenías configuradas */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/pricing" element={<Pricing />} />
               
               <Route path="/dashboard" element={
                 <ProtectedRoute><Dashboard /></ProtectedRoute>
@@ -50,8 +57,8 @@ function App() {
               <Route path="/sport-fields" element={
                 <ProtectedRoute><SportFields /></ProtectedRoute>
               } />
-              <Route path="/" element={<Navigate to="/dashboard" />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<HomeRedirect />} />
+              <Route path="*" element={<HomeRedirect />} />
             </Routes>
           </main>
         </div>
