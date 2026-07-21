@@ -15,7 +15,6 @@ const AdminDashboard = () => {
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [revenueError, setRevenueError] = useState(false);
   const [showCreateField, setShowCreateField] = useState(false);
   const [fieldForm, setFieldForm] = useState({
     name: '',
@@ -94,8 +93,8 @@ const AdminDashboard = () => {
   }
 
   // Calculados desde bookingsToday (BookingWebDTO real)
-  const totalRevenue    = (dashboard?.totalRevenue ?? 0).toFixed(2);
-  const totalFields     = fields.length;
+  const totalRevenue = (dashboard?.totalRevenue ?? 0).toFixed(2);
+  const totalFields = fields.length;
 
   // Formatea "2025-06-22T08:00:00" → "08:00 – 09:00"
   const handleCreateField = async (e) => {
@@ -326,7 +325,7 @@ const AdminDashboard = () => {
                     <td>{booking.fieldName}</td>
                     <td>{booking.customerName}</td>
                     <td className="price-cell">
-                      S/. {(booking.price?? 0).toFixed(2)}
+                      S/. {(booking.price ?? 0).toFixed(2)}
                     </td>
                     <td>
                       <span className={`payment-badge ${booking.paid ? 'paid' : 'pending'}`}>
