@@ -15,6 +15,7 @@ const AdminDashboard = () => {
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [, setRevenueError] = useState(false);
   const [showCreateField, setShowCreateField] = useState(false);
   const [fieldForm, setFieldForm] = useState({
     name: '',
