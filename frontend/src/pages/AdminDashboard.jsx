@@ -15,6 +15,7 @@ const AdminDashboard = () => {
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [revenueError, setRevenueError] = useState(false);
   const [showCreateField, setShowCreateField] = useState(false);
   const [fieldForm, setFieldForm] = useState({
     name: '',
@@ -37,16 +38,39 @@ const AdminDashboard = () => {
 
     const fetchData = async () => {
       try {
-        const [dashData, todayBookings, fieldsData, revenueData] = await Promise.all([
+        setRevenueError(false);
+        const [dashResult, bookingsResult, fieldsResult, revenueResult] = await Promise.allSettled([
           adminService.getDashboard(),
           adminService.getBookingsForToday(),
           sportFieldService.getAllSportFields(),
           adminService.getRevenueHistory(),
         ]);
-        setDashboard(dashData);
-        setBookingsToday(todayBookings);
-        setFields(fieldsData);
-        setRevenueHistory(revenueData);
+
+        if (dashResult.status === 'fulfilled') {
+          setDashboard(dashResult.value);
+        } else {
+          console.error('Error fetching dashboard stats:', dashResult.reason);
+          setError('Error al cargar las estadísticas principales del panel');
+        }
+
+        if (bookingsResult.status === 'fulfilled') {
+          setBookingsToday(bookingsResult.value);
+        } else {
+          console.error('Error fetching today bookings:', bookingsResult.reason);
+        }
+
+        if (fieldsResult.status === 'fulfilled') {
+          setFields(fieldsResult.value);
+        } else {
+          console.error('Error fetching fields:', fieldsResult.reason);
+        }
+
+        if (revenueResult.status === 'fulfilled') {
+          setRevenueHistory(revenueResult.value);
+        } else {
+          console.error('Error fetching revenue history:', revenueResult.reason);
+          setRevenueError(true);
+        }
       } catch (err) {
         setError(err.message || 'Error al cargar el panel de administración');
       } finally {

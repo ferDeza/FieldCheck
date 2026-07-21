@@ -85,28 +85,9 @@ const Pricing = () => {
       </section>
 
       {/* Secondary Cards Section (Reserva Destacada & Acceso Jugador) */}
-      <h2 className="pricing-section-title">Opciones Adicionales y Jugadores</h2>
+
       <section className="secondary-pricing-section">
         <div className="secondary-grid">
-          {/* Reserva Destacada */}
-          <div className="pricing-card secondary-card">
-            <div className="card-header">
-              <h3>Reserva Destacada</h3>
-              <span className="card-target">Complejo deportivo</span>
-            </div>
-            <div className="card-price-container">
-              <span className="card-price">S/. 50 - 100</span>
-              <span className="card-period">/ semana</span>
-            </div>
-            <ul className="card-features">
-              <li>Aparición prioritaria en los resultados de búsqueda de la plataforma</li>
-              <li>Mayor visibilidad para llenar tus horarios menos concurridos</li>
-            </ul>
-            <Link to="/login" className="pricing-action-btn">
-              Adquirir destacado
-            </Link>
-          </div>
-
           {/* Acceso Jugador */}
           <div className="pricing-card secondary-card">
             <div className="card-header">
